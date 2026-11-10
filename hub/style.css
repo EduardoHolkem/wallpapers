@@ -300,7 +300,7 @@ iframe.layer{pointer-events:none}
   position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:4;
   display:inline-flex;align-items:center;gap:8px;cursor:pointer;
   font-family:var(--display);font-weight:500;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
-  padding:11px 16px;color:var(--text);
+  padding:11px 16px;color:var(--text);white-space:nowrap;
   border:1px solid color-mix(in srgb,var(--acc) 60%,transparent);
   background:rgba(4,10,34,.82);
 }
@@ -308,27 +308,66 @@ iframe.layer{pointer-events:none}
 .play:hover{border-color:var(--acc);background:rgba(8,20,64,.92)}
 .play[hidden]{display:none}
 
-/* aviso de modo leve e botão no rodapé */
+/* aviso */
 /* no canto de cima, longe dos botões de download */
 .toast{
-  position:fixed;right:16px;top:16px;z-index:20;transform:translateY(-12px);opacity:0;
+  position:fixed;right:16px;top:72px;z-index:20;transform:translateY(-12px);opacity:0;
   display:flex;align-items:center;gap:14px;flex-wrap:wrap;
   width:max-content;max-width:min(440px,calc(100vw - 32px));padding:12px 14px 12px 18px;
   border:1px solid var(--line-strong);background:rgba(4,10,34,.95);
   font-size:13px;line-height:1.45;color:var(--ice);transition:opacity .4s,transform .4s var(--ease);
 }
 .toast.on{opacity:1;transform:none}
-.toast button,.fx-toggle{
+.toast button{
   font:inherit;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
   color:var(--sky);background:none;border:1px solid var(--line-strong);padding:7px 10px;cursor:pointer;
 }
-.toast button:hover,.fx-toggle:hover{color:#fff;border-color:var(--sky)}
-.fx-toggle{padding:4px 8px;font-size:10.5px}
+.toast button:hover{color:#fff;border-color:var(--sky)}
 
-/* ---------- modo leve ----------
-   Para PC sem placa de vídeo: o fundo vira uma imagem parada (vinheta e
-   linhas já desenhadas nela), sem granulação, sem animações que não param
-   e sem sombras grandes que precisariam ser repintadas a cada quadro. */
+/* configurações: engrenagem fixa no canto, painel com o modo avançado */
+.cfg{position:fixed;top:16px;right:16px;z-index:25}
+.cfg-btn{
+  width:44px;height:44px;display:grid;place-items:center;cursor:pointer;
+  color:var(--ice);background:rgba(4,10,34,.82);border:1px solid var(--line-strong);
+  transition:border-color .25s,color .25s,background .25s;
+}
+.cfg-btn svg{width:20px;height:20px;transition:transform .5s var(--ease)}
+.cfg-btn:hover,.cfg.open .cfg-btn{color:#fff;border-color:var(--sky);background:rgba(8,20,64,.92)}
+.cfg-btn:hover svg,.cfg.open .cfg-btn svg{transform:rotate(60deg)}
+.cfg-btn:focus-visible,.switch:focus-visible{outline:1px solid var(--sky);outline-offset:3px}
+.cfg-panel{
+  position:absolute;top:52px;right:0;width:min(320px,calc(100vw - 32px));
+  padding:16px 18px 18px;border:1px solid var(--line-strong);background:rgba(4,10,34,.96);
+  box-shadow:0 18px 50px -20px rgba(0,0,0,.8);
+}
+.cfg-panel[hidden]{display:none}
+.cfg-title{
+  font-family:var(--mono);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);
+  padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid var(--line);
+}
+.cfg-row{display:flex;align-items:flex-start;gap:16px}
+.cfg-text{flex:1;display:grid;gap:6px}
+.cfg-text b{font-family:var(--display);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.cfg-text span{font-size:12.5px;line-height:1.5;color:var(--muted)}
+/* chave quadrada: desligada no leve, acesa na cor do wallpaper no avançado */
+.switch{
+  position:relative;flex:none;width:46px;height:24px;margin-top:2px;cursor:pointer;
+  background:rgba(8,20,64,.8);border:1px solid var(--line-strong);transition:background .25s,border-color .25s;
+}
+.switch i{position:absolute;top:3px;left:3px;width:16px;height:16px;background:var(--muted);transition:transform .25s var(--ease),background .25s}
+.switch[aria-checked=true]{background:color-mix(in srgb,var(--acc) 35%,rgba(8,20,64,.8));border-color:var(--acc)}
+.switch[aria-checked=true] i{transform:translateX(22px);background:#fff}
+@media (max-width:480px){
+  .cfg{top:12px;right:12px}
+  .cfg-btn{width:40px;height:40px}
+  .cfg-panel{top:48px}
+}
+
+/* ---------- modo leve (padrão) ----------
+   O site abre assim: o fundo vira uma imagem parada (vinheta e linhas já
+   desenhadas nela), sem granulação, sem animações que não param e sem
+   sombras grandes que precisariam ser repintadas a cada quadro. O modo
+   avançado, ligado na engrenagem, tira a classe .lite e traz tudo de volta. */
 .lite .grain,.lite .vignette,.lite .frame .scan{display:none}
 .lite .kicker .dot,.lite .stage-bar .live i,.lite .cue i::after,
 .lite img.layer.on,.lite video.layer.on{animation:none}
@@ -383,6 +422,7 @@ iframe.layer{pointer-events:none}
   .btn.dl{gap:6px}
   .btn.dl svg{width:12px;height:12px}
   .card-body{padding:14px}
+  .play{bottom:14px;padding:8px 12px;font-size:9.5px}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}

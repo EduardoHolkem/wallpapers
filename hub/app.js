@@ -23,39 +23,27 @@
       'Cada wallpaper que eu já criei, com prévia ao vivo. Toque para ver rodando e toque de novo para abrir.';
   }
 
-  /* ================= Modo leve =================
-     Sem placa de vídeo (ou com ela bloqueada) o navegador monta a tela usando
-     o processador, e as luzes animadas, a granulação e os wallpapers rodando
-     nas prévias travam tudo. No modo leve o fundo vira uma imagem parada, as
-     animações contínuas param e o wallpaper só roda na prévia quando a pessoa
-     pede. Liga sozinho quando não há placa de vídeo ou quando o site não passa
-     de 30 quadros por segundo, e dá para trocar no rodapé. */
-  const LITE_KEY = 'hub-leve';
-  function softGPU() {
-    try {
-      const c = document.createElement('canvas'), g = c.getContext('webgl') || c.getContext('experimental-webgl');
-      if (!g) return true;
-      const d = g.getExtension('WEBGL_debug_renderer_info');
-      const r = String(g.getParameter(d ? d.UNMASKED_RENDERER_WEBGL : g.RENDERER));
-      const l = g.getExtension('WEBGL_lose_context'); if (l) l.loseContext();
-      return /swiftshader|llvmpipe|softpipe|software|basic render/i.test(r);
-    } catch (e) { return true; }
-  }
+  /* ================= Modo leve e modo avançado =================
+     O site abre no modo leve: o fundo é uma imagem parada, sem granulação nem
+     animações que não param, e o wallpaper só roda na prévia quando a pessoa
+     pede. Assim ele fica liso até em PC sem placa de vídeo. O modo avançado,
+     ligado na engrenagem do canto, traz as luzes em movimento, a granulação e
+     os wallpapers rodando sozinhos nas prévias e no catálogo. */
+  const MODE_KEY = 'hub-avancado';
   const store = {
-    get() { try { return localStorage.getItem(LITE_KEY); } catch (e) { return null; } },
-    set(v) { try { localStorage.setItem(LITE_KEY, v); } catch (e) {} }
+    get() { try { return localStorage.getItem(MODE_KEY); } catch (e) { return null; } },
+    set(v) { try { localStorage.setItem(MODE_KEY, v); } catch (e) {} }
   };
-  const urlLite = new URLSearchParams(location.search).get('leve');   // ?leve=1 força, ?leve=0 desliga
-  const saved = store.get();
-  const chosen = urlLite != null || saved != null;   // a pessoa já escolheu: nada de automático
-  const autoLite = !chosen && (softGPU() || matchMedia('(prefers-reduced-motion: reduce)').matches ||
-                               (navigator.hardwareConcurrency || 4) <= 2);
-  let lite = urlLite != null ? urlLite !== '0' : saved != null ? saved === '1' : autoLite;
+  const urlLite = new URLSearchParams(location.search).get('leve');   // ?leve=0 abre no avançado
+  let lite = urlLite != null ? urlLite !== '0' : store.get() !== '1';
   document.documentElement.classList.toggle('lite', lite);
   const liveUrl = w => w.live + (lite ? '?leve=1' : '');
-  const liteText = () => { document.querySelector('.cat-sub').textContent = 'Cada wallpaper que eu já criei. ' +
-    (noHover ? 'Toque para ver o resumo e toque de novo para abrir.' : 'Clique para abrir a página dele.'); };
-  if (lite) liteText();
+  const catSub = document.querySelector('.cat-sub'), catSubFull = catSub.textContent;
+  const modeText = () => {
+    catSub.textContent = !lite ? catSubFull : 'Cada wallpaper que eu já criei. ' +
+      (noHover ? 'Toque para ver o resumo e toque de novo para abrir.' : 'Clique para abrir a página dele.');
+  };
+  modeText();
 
   function tag(name, text, cls) { const e = document.createElement(name); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; }
   function linkTo(a, href) { a.href = href; a.target = '_blank'; a.rel = 'noopener'; }
@@ -359,9 +347,9 @@
     for (let y = 0; y < H; y += 3) ctx.fillRect(0, y, W, 1);
   }
 
-  // Confere o FPS nos primeiros segundos. Se o site não passar de 30 quadros
-  // por segundo, o modo leve liga sozinho (só se a pessoa ainda não escolheu).
-  const probe = { from: 0, n: 0, done: chosen || lite };
+  // No modo avançado, confere o FPS nos primeiros segundos. Se o site não
+  // passar de 30 quadros por segundo, sugere voltar ao modo leve.
+  let probe = { from: 0, n: 0, done: lite };
   let last = 0, prev = 0;
   function frame(now) {
     if (lite) return;                        // modo leve: o loop para
@@ -372,7 +360,7 @@
         probe.n++;
         if (now - probe.from >= 4000) {
           probe.done = true;
-          if (probe.n * 1000 / (now - probe.from) < 30) { enterLite(true); return; }
+          if (probe.n * 1000 / (now - probe.from) < 30) toast('O modo avançado está pesado neste computador. No leve o site fica bem mais liso.', 'Voltar ao modo leve', () => setMode(false));
         }
       }
     }
@@ -423,40 +411,61 @@
   }
   if (lite) drawStatic(); else { size(); requestAnimationFrame(frame); }
 
-  /* ---------- liga o modo leve com a página aberta ---------- */
-  function enterLite(auto) {
-    if (lite) return;
-    lite = true;
-    document.documentElement.classList.add('lite');
-    if (auto) store.set('1');
-    drawStatic();
-    // troca o wallpaper rodando na prévia pela capa e para o do catálogo
+  /* ---------- troca de modo com a página aberta ---------- */
+  function setMode(advanced) {
+    if (advanced === !lite) return;
+    lite = !advanced;
+    store.set(advanced ? '1' : '0');
+    document.documentElement.classList.toggle('lite', lite);
     clearTimeout(liveTimer); clearTimeout(cardTimer); stopCardLive();
-    const w = featured[current]; current = -1;
-    const k = featured.indexOf(w); if (k >= 0) select(k);
-    fxText(); liteText();
-    toast('Liguei o modo leve para o site rodar liso neste computador.');
+    if (lite) drawStatic();
+    else { last = prev = 0; probe = { from: 0, n: 0, done: false }; size(); requestAnimationFrame(frame); }
+    // refaz a prévia: no leve volta a capa com o botão, no avançado o wallpaper roda sozinho
+    const k = current; current = -1; select(k);
+    modeText(); syncSwitch();
   }
 
-  /* ---------- aviso e botão no rodapé ---------- */
-  function toast(msg) {
-    let seen = false; try { seen = sessionStorage.getItem('hub-leve-aviso'); sessionStorage.setItem('hub-leve-aviso', '1'); } catch (e) {}
-    if (seen) return;
-    const t = tag('div', null, 'toast');
+  /* ---------- aviso ---------- */
+  let toastEl = null;
+  function toast(msg, action, fn) {
+    if (toastEl) toastEl.remove();
+    const t = toastEl = tag('div', null, 'toast');
     t.setAttribute('role', 'status');
     t.append(tag('span', msg));
-    const b = tag('button', 'Usar efeitos completos'); b.type = 'button';
-    b.addEventListener('click', () => { store.set('0'); location.reload(); });
+    const b = tag('button', action); b.type = 'button';
+    b.addEventListener('click', () => { fn(); hide(); });
     t.append(b);
     document.body.append(t);
     requestAnimationFrame(() => t.classList.add('on'));
-    setTimeout(() => { t.classList.remove('on'); setTimeout(() => t.remove(), 600); }, 9000);
+    const hide = () => { t.classList.remove('on'); setTimeout(() => t.remove(), 600); };
+    setTimeout(hide, 10000);
   }
-  if (autoLite) toast('Seu computador está sem placa de vídeo ativa, então liguei o modo leve.');
 
-  const fx = tag('button', null, 'fx-toggle'); fx.type = 'button';
-  const fxText = () => { fx.textContent = lite ? 'efeitos: leves' : 'efeitos: completos'; fx.setAttribute('aria-pressed', String(lite)); };
-  fxText();
-  fx.addEventListener('click', () => { store.set(lite ? '0' : '1'); location.reload(); });
-  document.querySelector('.foot').append(fx);
+  /* ---------- configurações (engrenagem no canto) ---------- */
+  const GEAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">' +
+    '<circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
+  const cfg = tag('div', null, 'cfg');
+  cfg.innerHTML =
+    '<button type="button" class="cfg-btn" aria-label="Configurações" aria-expanded="false" aria-controls="cfg-panel">' + GEAR + '</button>' +
+    '<div class="cfg-panel" id="cfg-panel" role="dialog" aria-label="Configurações" hidden>' +
+      '<p class="cfg-title">configurações</p>' +
+      '<div class="cfg-row">' +
+        '<div class="cfg-text"><b id="cfg-adv-label">Modo avançado</b>' +
+        '<span>Luzes em movimento, granulação e os wallpapers rodando sozinhos nas prévias e no catálogo. Pesa mais no computador.</span></div>' +
+        '<button type="button" class="switch" role="switch" aria-checked="false" aria-labelledby="cfg-adv-label"><i></i></button>' +
+      '</div>' +
+    '</div>';
+  document.body.append(cfg);
+  const cfgBtn = cfg.querySelector('.cfg-btn'), panel = cfg.querySelector('.cfg-panel'), sw = cfg.querySelector('.switch');
+  function syncSwitch() { sw.setAttribute('aria-checked', String(!lite)); }
+  function openPanel(open) {
+    panel.hidden = !open;
+    cfg.classList.toggle('open', open);
+    cfgBtn.setAttribute('aria-expanded', String(open));
+  }
+  syncSwitch();
+  cfgBtn.addEventListener('click', () => openPanel(panel.hidden));
+  sw.addEventListener('click', () => setMode(lite));
+  document.addEventListener('click', e => { if (!panel.hidden && !cfg.contains(e.target)) openPanel(false); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden) { openPanel(false); cfgBtn.focus(); } });
 })();
