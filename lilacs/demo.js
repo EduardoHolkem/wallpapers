@@ -4,24 +4,61 @@
    de música. No Wallpaper Engine e no Lively a música e a letra vêm do
    player de verdade. */
 (function () {
+  // o hub manda o idioma no endereço (?lang=pt, en ou es)
+  const LANG = (new URLSearchParams(location.search).get('lang') || 'pt').slice(0, 2);
+  const TEXT = {
+    pt: { title: 'Demo do wallpaper', lines: [
+      'isto é uma demonstração',
+      'no seu PC a música vem do Spotify',
+      'ou do YouTube Music no navegador',
+      'a letra é buscada sozinha',
+      'e acompanha o tempo da música',
+      '',
+      'quatro cores girando no fundo',
+      'fantasmas espelhados em neon',
+      'halo de luz RGB atrás dela',
+      'glitch, granulação e scanlines',
+      '',
+      'mexa o mouse para ver o parallax',
+      'baixe para Wallpaper Engine ou Lively',
+      'feito com HTML, CSS e JavaScript'
+    ] },
+    en: { title: 'Wallpaper demo', lines: [
+      'this is a demo',
+      'on your PC the music comes from Spotify',
+      'or from YouTube Music in the browser',
+      'the lyrics are found automatically',
+      'and follow the timing of the song',
+      '',
+      'four colors spinning in the background',
+      'mirrored neon ghosts',
+      'an RGB light halo behind her',
+      'glitch, film grain and scanlines',
+      '',
+      'move the mouse to see the parallax',
+      'download it for Wallpaper Engine or Lively',
+      'made with HTML, CSS and JavaScript'
+    ] },
+    es: { title: 'Demo del fondo', lines: [
+      'esto es una demostración',
+      'en tu PC la música viene de Spotify',
+      'o de YouTube Music en el navegador',
+      'la letra se busca sola',
+      'y va al compás de la canción',
+      '',
+      'cuatro colores girando en el fondo',
+      'fantasmas de neón reflejados',
+      'un halo de luz RGB detrás de ella',
+      'glitch, grano y scanlines',
+      '',
+      'mueve el cursor para ver el parallax',
+      'descárgalo para Wallpaper Engine o Lively',
+      'hecho con HTML, CSS y JavaScript'
+    ] }
+  };
   const ARTIST = 'Eduardo Holkem';
-  const TITLE = 'Demo do wallpaper';
-  const LINES = [
-    'isto é uma demonstração',
-    'no seu PC a música vem do Spotify',
-    'ou do YouTube Music no navegador',
-    'a letra é buscada sozinha',
-    'e acompanha o tempo da música',
-    '',
-    'quatro cores girando no fundo',
-    'fantasmas espelhados em neon',
-    'halo de luz RGB atrás dela',
-    'glitch, granulação e scanlines',
-    '',
-    'mexa o mouse para ver o parallax',
-    'baixe para Wallpaper Engine ou Lively',
-    'feito com HTML, CSS e JavaScript'
-  ];
+  const TITLE = (TEXT[LANG] || TEXT.pt).title;
+  const LINES = (TEXT[LANG] || TEXT.pt).lines;
   const STEP = 3;
   const LENGTH = LINES.length * STEP + 4;
   const lrc = LINES.map((s, i) => {

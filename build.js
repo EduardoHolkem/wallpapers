@@ -90,7 +90,7 @@ function buildSite() {
   // numa cópia antiga guardada em cache depois de uma atualização
   const stamp = Date.now().toString(36);
   const index = path.join(site, 'index.html');
-  fs.writeFileSync(index, fs.readFileSync(index, 'utf8').replace(/(href|src)="(style.css|data.js|app.js)"/g, (m, a, f) => a + '="' + f + '?v=' + stamp + '"'));
+  fs.writeFileSync(index, fs.readFileSync(index, 'utf8').replace(/(href|src)="(style.css|i18n.js|data.js|app.js)"/g, (m, a, f) => a + '="' + f + '?v=' + stamp + '"'));
   protectSite(site);
   fs.writeFileSync(path.join(site, '.nojekyll'), '');
   console.log('site pronto em', path.relative(root, site) || '.');

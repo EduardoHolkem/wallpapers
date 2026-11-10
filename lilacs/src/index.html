@@ -198,7 +198,9 @@
 
   /* ================= Relógio ================= */
   const clockTime=document.getElementById('clock-time'), clockDate=document.getElementById('clock-date');
-  const dateFmt=new Intl.DateTimeFormat('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+  // data em português; a prévia do hub pode pedir inglês ou espanhol (?lang=en ou es)
+  const LOCALE={en:'en-US',es:'es-ES'}[new URLSearchParams(location.search).get('lang')]||'pt-BR';
+  const dateFmt=new Intl.DateTimeFormat(LOCALE,{weekday:'long',day:'numeric',month:'long'});
   let clockMin=-1;
   function updateClock(){
     const now=new Date(), m=now.getHours()*60+now.getMinutes();

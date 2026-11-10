@@ -11,7 +11,7 @@ Wallpapers animados para **Wallpaper Engine** e **Lively Wallpaper**, feitos com
 
 <br/>
 
-O [hub](https://eduardoholkem.github.io/wallpapers/) é a vitrine. Lá dá para ver cada wallpaper rodando ao vivo e escolher qual baixar. Este repositório guarda os wallpapers. Cada um tem a sua pasta, com código, configurações, prévia e um README próprio.
+O [hub](https://eduardoholkem.github.io/wallpapers/) é a vitrine. Lá dá para ver cada wallpaper rodando ao vivo e escolher qual baixar. Este repositório guarda os wallpapers. Cada um tem a sua pasta, com código, configurações, prévia e um README próprio. O hub fala português, inglês e espanhol, escolhe sozinho pelo idioma do navegador e tem os links das minhas redes.
 
 ## Wallpapers
 
@@ -36,6 +36,8 @@ O passo a passo completo fica no README de cada wallpaper.
 ```
 wallpapers
 ├── hub/                  site do hub (publicado no GitHub Pages)
+│   ├── i18n.js           textos do site em português, inglês e espanhol
+│   └── data.js           wallpapers e redes sociais
 ├── lilacs/               um wallpaper por pasta
 │   ├── src/              código (index.html e imagens)
 │   ├── wallpaper-engine/ project.json
@@ -51,10 +53,11 @@ wallpapers
 ## Para desenvolver
 
 ```bash
+npm install
 node build.js
 ```
 
-Isso gera em `dist/` a pasta do Wallpaper Engine, a do Lively e os zips de cada wallpaper, e em `site/` o hub com a prévia ao vivo de todos. A cada envio para a branch `main`, o GitHub Actions monta o site e publica no Pages.
+Isso gera em `dist/` a pasta do Wallpaper Engine, a do Lively e os zips de cada wallpaper, e em `site/` o hub com a prévia ao vivo de todos. O `npm install` só instala o esbuild, que compacta o site publicado e coloca nele a política de segurança. O código do repositório continua legível. A cada envio para a branch `main`, o GitHub Actions monta o site e publica no Pages.
 
 Para incluir um wallpaper novo, crie a pasta dele no mesmo formato das outras, coloque uma linha na lista do `build.js` e um bloco em `hub/data.js`. As releases usam o nome do wallpaper na tag, como `lilacs-v2.1.1`.
 

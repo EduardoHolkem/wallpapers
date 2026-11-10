@@ -16,11 +16,41 @@
   addEventListener('pointerdown', e => { lastPointer = e.pointerType || 'mouse'; }, true);
   addEventListener('keydown', () => { lastPointer = 'keyboard'; }, true);
   const isTouch = () => lastPointer === 'touch' || (noHover && lastPointer !== 'keyboard');
-  if (noHover) {
-    document.querySelector('.lead').textContent =
-      'Wallpapers animados para Wallpaper Engine e Lively. Toque em um deles para ver a prévia.';
-    document.querySelector('.cat-sub').textContent =
-      'Cada wallpaper que eu já criei, com prévia ao vivo. Toque para ver rodando e toque de novo para abrir.';
+
+  /* ================= Idioma =================
+     Português, inglês ou espanhol. Vale o ?lang= do endereço ou o que a pessoa
+     escolheu no painel (guardado no navegador). Sem escolha, segue o idioma do
+     navegador, e quem não fala português nem espanhol vê o site em inglês. */
+  const I18N = window.HUB_I18N || {};
+  const LANGS = ['pt', 'en', 'es'];
+  const LANG_KEY = 'hub-idioma';
+  function pickLang() {
+    const q = new URLSearchParams(location.search).get('lang');
+    if (LANGS.includes(q)) return q;
+    try { const v = localStorage.getItem(LANG_KEY); if (LANGS.includes(v)) return v; } catch (e) {}
+    for (const l of navigator.languages || [navigator.language || '']) {
+      const k = String(l).slice(0, 2).toLowerCase();
+      if (LANGS.includes(k)) return k;
+    }
+    return 'en';
+  }
+  const lang = I18N.pt ? pickLang() : 'pt';
+  const T = I18N[lang] || I18N.pt || {};
+  const t = (k, ...a) => { const v = T[k] != null ? T[k] : (I18N.pt || {})[k]; return typeof v === 'function' ? v(...a) : (v == null ? '' : v); };
+  const L = v => v && typeof v === 'object' ? (v[lang] || v.pt) : v;   // textos que vêm do data.js
+  if (I18N.pt) {
+    document.documentElement.lang = t('htmlLang');
+    document.title = t('pageTitle');
+    document.querySelector('meta[name="description"]').setAttribute('content', t('pageDesc'));
+    document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll('[data-i18n-aria]').forEach(el => el.setAttribute('aria-label', t(el.dataset.i18nAria)));
+    document.querySelector('.lead').textContent = t(noHover ? 'leadTouch' : 'leadMouse');
+  }
+  function setLang(code) {
+    try { localStorage.setItem(LANG_KEY, code); } catch (e) {}
+    const u = new URL(location.href);
+    u.searchParams.set('lang', code);
+    location.assign(u.toString());
   }
 
   /* ================= Modo leve e modo avançado =================
@@ -37,11 +67,11 @@
   const urlLite = new URLSearchParams(location.search).get('leve');   // ?leve=0 abre no avançado
   let lite = urlLite != null ? urlLite !== '0' : store.get() !== '1';
   document.documentElement.classList.toggle('lite', lite);
-  const liveUrl = w => w.live + (lite ? '?leve=1' : '');
-  const catSub = document.querySelector('.cat-sub'), catSubFull = catSub.textContent;
+  // o wallpaper na prévia recebe o modo e o idioma (relógio e texto da demo)
+  const liveUrl = w => w.live + '?' + new URLSearchParams(lite ? { leve: '1', lang } : { lang }).toString();
+  const catSub = document.querySelector('.cat-sub');
   const modeText = () => {
-    catSub.textContent = !lite ? catSubFull : 'Cada wallpaper que eu já criei. ' +
-      (noHover ? 'Toque para ver o resumo e toque de novo para abrir.' : 'Clique para abrir a página dele.');
+    catSub.textContent = t(lite ? (noHover ? 'catLiteTouch' : 'catLiteMouse') : (noHover ? 'catTouch' : 'catMouse'));
   };
   modeText();
 
@@ -79,12 +109,14 @@
     b.style.setProperty('--i', i);
     if (w) {
       b.style.setProperty('--a', w.accent);
-      b.innerHTML = `<span class="num">${pad(i + 1)}</span><span class="name"></span><span class="go">prévia</span>`;
+      b.innerHTML = `<span class="num">${pad(i + 1)}</span><span class="name"></span><span class="go"></span>`;
+      b.querySelector('.go').textContent = t('preview');
       b.querySelector('.name').textContent = w.name;
-      b.setAttribute('aria-label', 'Ver a prévia do ' + w.name);
+      b.setAttribute('aria-label', t('seePreview', w.name));
     } else {
-      b.setAttribute('aria-label', 'Espaço bloqueado');
-      b.innerHTML = `<span class="num">${pad(i + 1)}</span><span class="name">bloqueado</span><span class="go">${LOCK_SVG}</span>`;
+      b.setAttribute('aria-label', t('lockedSlot'));
+      b.innerHTML = `<span class="num">${pad(i + 1)}</span><span class="name"></span><span class="go">${LOCK_SVG}</span>`;
+      b.querySelector('.name').textContent = t('locked');
     }
     b.addEventListener('mouseenter', () => { if (!isTouch()) select(i); });
     b.addEventListener('focus', () => { if (!isTouch()) select(i); });
@@ -135,7 +167,9 @@
     clearTimeout(liveTimer);
     if (!w) {
       const box = tag('div', null, 'locked-preview');
-      box.innerHTML = LOCK_SVG + '<b>bloqueado</b><span>espaço reservado para o próximo wallpaper</span>';
+      box.innerHTML = LOCK_SVG + '<b></b><span></span>';
+      box.querySelector('b').textContent = t('locked');
+      box.querySelector('span').textContent = t('lockedHint');
       addLayer(box);
       return;
     }
@@ -144,15 +178,15 @@
       el = document.createElement('video');
       Object.assign(el, { src: w.video, muted: true, loop: true, autoplay: true, playsInline: true });
     } else {
-      el = new Image(); el.alt = 'Prévia do wallpaper ' + w.name; setPoster(el, w);
+      el = new Image(); el.alt = t('previewAlt', w.name); setPoster(el, w);
     }
     addLayer(el);
-    // no modo leve o wallpaper só roda quando a pessoa aperta "ver rodando"
+    // no modo leve o wallpaper só roda quando a pessoa aperta o botão da prévia
     playBtn.hidden = !(lite && w.live);
     if (w.live && !lite) liveTimer = setTimeout(() => startLive(w), 900);
   }
   function startLive(w) {
-    const f = liveFrame(liveUrl(w), 'Wallpaper ' + w.name + ' rodando', f => {
+    const f = liveFrame(liveUrl(w), t('running', w.name), f => {
       if (featured[current] === w) addLayer(f); else f.remove();
     });
     f.className = 'layer';
@@ -160,7 +194,8 @@
   }
   const playBtn = tag('button', null, 'play');
   playBtn.type = 'button'; playBtn.hidden = true;
-  playBtn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>ver rodando';
+  playBtn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>';
+  playBtn.append(t('seeLive'));
   playBtn.addEventListener('click', () => {
     const w = featured[current];
     if (!w || !w.live) return;
@@ -182,7 +217,7 @@
     const a = button(d.label, d.url, 'dl');
     a.removeAttribute('target');
     a.setAttribute('download', '');
-    a.setAttribute('aria-label', 'Baixar para ' + d.label);
+    a.setAttribute('aria-label', t('downloadFor', d.label));
     a.insertAdjacentHTML('afterbegin', DL_SVG);
     return a;
   }
@@ -192,27 +227,27 @@
                   '<rect x="3.5" y="4.5" width="17" height="15"/><path d="M3.5 16l5-5 4 4 3-3 5 5"/><circle cx="15.5" cy="9" r="1.4"/></svg>';
   function imageButton(w) {
     const cel = matchMedia('(orientation: portrait) and (max-width: 900px)').matches;
-    const a = button(cel ? 'Imagem celular' : 'Imagem PC', cel ? w.images.celular : w.images.pc, 'dl');
+    const a = button(t(cel ? 'imagePhone' : 'imagePc'), cel ? w.images.celular : w.images.pc, 'dl');
     a.removeAttribute('target');
     a.setAttribute('download', '');
-    a.setAttribute('aria-label', 'Baixar a imagem estática para ' + (cel ? 'celular' : 'PC'));
-    a.title = 'Imagem parada, para quem não usa Wallpaper Engine nem Lively';
+    a.setAttribute('aria-label', t(cel ? 'imageAriaPhone' : 'imageAriaPc'));
+    a.title = t('imageTip');
     a.insertAdjacentHTML('afterbegin', IMG_SVG);
     return a;
   }
   function fillInfo(w) {
     const info = $('info');
-    $('info-name').textContent = w ? w.name : 'Bloqueado';
-    $('info-about').textContent = w ? w.about : 'Este espaço está reservado para o próximo wallpaper. Quando ele ficar pronto, aparece aqui.';
-    $('info-platforms').replaceChildren(...(w ? w.platforms : ['em produção']).map(p => tag('li', p)));
+    $('info-name').textContent = w ? w.name : t('lockedTitle');
+    $('info-about').textContent = w ? L(w.about) : t('lockedAbout');
+    $('info-platforms').replaceChildren(...(w ? w.platforms : [t('inTheWorks')]).map(p => tag('li', p)));
     $('info-tech').replaceChildren(...(w ? w.tech : []).map(t => tag('li', t)));
     const dls = w && w.downloads && w.downloads.length ? w.downloads : null;
     // nos destaques não tem botão para o repositório: ele fica no catálogo
     $('info-actions').replaceChildren(...(w ? [
-      ...(w.live ? [button('Demo ao vivo', w.live)] : []),
-      ...(dls ? dls.map(downloadButton) : [button('Em breve', '')]),
+      ...(w.live ? [button(t('liveDemo'), w.live + '?lang=' + lang)] : []),
+      ...(dls ? dls.map(downloadButton) : [button(t('comingSoon'), '')]),
       ...(w.images ? [imageButton(w)] : [])
-    ] : [button('Em breve', '')]));
+    ] : [button(t('comingSoon'), '')]));
     info.classList.remove('swap'); void info.offsetWidth; info.classList.add('swap');
   }
 
@@ -222,7 +257,7 @@
     const w = featured[i];
     items.forEach((it, k) => it.classList.toggle('on', k === i));
     document.documentElement.style.setProperty('--acc', w ? w.accent : LOCK_ACCENT);
-    $('stage-name').textContent = w ? w.name : 'bloqueado';
+    $('stage-name').textContent = w ? w.name : t('locked');
     $('stage-count').textContent = pad(i + 1) + ' / ' + pad(SLOTS);
     showPreview(w);
     fillInfo(w);
@@ -231,7 +266,7 @@
 
   /* ================= Catálogo ================= */
   const grid = $('grid');
-  $('cat-count').textContent = pad(W.length) + (W.length === 1 ? ' wallpaper' : ' wallpapers');
+  $('cat-count').textContent = pad(W.length) + ' ' + t('countWord', W.length);
   let cardLive = null, cardTimer = 0;
 
   function card(w, i) {
@@ -243,8 +278,8 @@
       `<div class="card-media"><img loading="lazy" alt=""><p class="card-about"></p></div>` +
       `<div class="card-body"><span class="card-num">${pad(i + 1)}</span><h3 class="card-name"></h3><span class="card-tags"></span></div>`;
     const img = a.querySelector('img');
-    img.alt = 'Capa do wallpaper ' + w.name; setPoster(img, w);
-    a.querySelector('.card-about').textContent = w.about;
+    img.alt = t('coverAlt', w.name); setPoster(img, w);
+    a.querySelector('.card-about').textContent = L(w.about);
     a.querySelector('.card-name').textContent = w.name;
     a.querySelector('.card-tags').textContent = w.platforms.map(p => p === 'Wallpaper Engine' ? 'WE' : p).join(' / ');
     // com o mouse em cima (ou no primeiro toque) o wallpaper roda dentro do
@@ -255,7 +290,7 @@
       if (!w.live || lite) return;     // no modo leve o cartão fica só com a capa
       cardTimer = setTimeout(() => {
         stopCardLive();
-        const f = liveFrame(liveUrl(w),'Wallpaper ' + w.name + ' rodando', f => f.classList.add('on'));
+        const f = liveFrame(liveUrl(w), t('running', w.name), f => f.classList.add('on'));
         box.insertBefore(f, box.querySelector('.card-about'));
         cardLive = f;
       }, delay);
@@ -283,8 +318,11 @@
   function lockedCard() {
     const a = tag('div', null, 'card locked');
     a.innerHTML =
-      `<div class="card-media"><div class="lock-big">${LOCK_SVG}<span>bloqueado</span></div></div>` +
-      `<div class="card-body"><span class="card-num">--</span><h3 class="card-name">Em produção</h3><span class="card-tags">em breve</span></div>`;
+      `<div class="card-media"><div class="lock-big">${LOCK_SVG}<span></span></div></div>` +
+      `<div class="card-body"><span class="card-num">--</span><h3 class="card-name"></h3><span class="card-tags"></span></div>`;
+    a.querySelector('.lock-big span').textContent = t('locked');
+    a.querySelector('.card-name').textContent = t('inTheWorksTitle');
+    a.querySelector('.card-tags').textContent = t('soon');
     return a;
   }
 
@@ -446,15 +484,33 @@
     '<circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
   const cfg = tag('div', null, 'cfg');
   cfg.innerHTML =
-    '<button type="button" class="cfg-btn" aria-label="Configurações" aria-expanded="false" aria-controls="cfg-panel">' + GEAR + '</button>' +
-    '<div class="cfg-panel" id="cfg-panel" role="dialog" aria-label="Configurações" hidden>' +
-      '<p class="cfg-title">configurações</p>' +
+    '<button type="button" class="cfg-btn" aria-expanded="false" aria-controls="cfg-panel">' + GEAR + '</button>' +
+    '<div class="cfg-panel" id="cfg-panel" role="dialog" hidden>' +
+      '<p class="cfg-title"></p>' +
       '<div class="cfg-row">' +
-        '<div class="cfg-text"><b id="cfg-adv-label">Modo avançado</b>' +
-        '<span>Luzes em movimento, granulação e os wallpapers rodando sozinhos nas prévias e no catálogo. Pesa mais no computador.</span></div>' +
+        '<div class="cfg-text"><b id="cfg-adv-label"></b><span class="cfg-adv-desc"></span></div>' +
         '<button type="button" class="switch" role="switch" aria-checked="false" aria-labelledby="cfg-adv-label"><i></i></button>' +
       '</div>' +
+      '<div class="cfg-row cfg-lang">' +
+        '<div class="cfg-text"><b id="cfg-lang-label"></b></div>' +
+        '<div class="langs" role="group" aria-labelledby="cfg-lang-label"></div>' +
+      '</div>' +
     '</div>';
+  cfg.querySelector('.cfg-btn').setAttribute('aria-label', t('settings'));
+  cfg.querySelector('.cfg-panel').setAttribute('aria-label', t('settings'));
+  cfg.querySelector('.cfg-title').textContent = t('settingsTitle');
+  cfg.querySelector('#cfg-adv-label').textContent = t('advanced');
+  cfg.querySelector('.cfg-adv-desc').textContent = t('advancedDesc');
+  cfg.querySelector('#cfg-lang-label').textContent = t('language');
+  // um botão por idioma, cada um escrito na própria língua
+  LANGS.forEach(code => {
+    const b = tag('button', code.toUpperCase(), 'lang-btn');
+    b.type = 'button';
+    b.setAttribute('aria-label', (I18N[code] || {}).langName || code);
+    b.setAttribute('aria-pressed', String(code === lang));
+    b.addEventListener('click', () => { if (code !== lang) setLang(code); });
+    cfg.querySelector('.langs').append(b);
+  });
   document.body.append(cfg);
   const cfgBtn = cfg.querySelector('.cfg-btn'), panel = cfg.querySelector('.cfg-panel'), sw = cfg.querySelector('.switch');
   function syncSwitch() { sw.setAttribute('aria-checked', String(!lite)); }
@@ -468,4 +524,29 @@
   sw.addEventListener('click', () => setMode(lite));
   document.addEventListener('click', e => { if (!panel.hidden && !cfg.contains(e.target)) openPanel(false); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden) { openPanel(false); cfgBtn.focus(); } });
+
+  /* ---------- redes sociais ----------
+     Ícones de traço simples, na cor do site (azul claro) e acesos na cor do
+     wallpaper escolhido ao passar o mouse. No topo só os ícones; no rodapé,
+     ícone e nome. */
+  const SOCIAL_SVG = {
+    instagram: '<rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/>',
+    tiktok: '<path d="M14 3.5v11.2a3.7 3.7 0 1 1-3.7-3.7"/><path d="M14 3.5c.4 2.6 2.2 4.4 5 4.7"/>',
+    pinterest: '<circle cx="12" cy="12" r="8.5"/><path d="M10.6 20.2l1.6-7.1"/><path d="M9.7 14.6c-.9-.6-1.3-1.6-1.3-2.7 0-2.4 1.9-4.1 4.2-4.1 2.2 0 3.7 1.4 3.7 3.4 0 2.3-1.2 4-2.9 4-.9 0-1.5-.7-1.3-1.6l.6-2.5"/>',
+    sharespot: '<path d="M12 21s-6.5-6.1-6.5-11a6.5 6.5 0 0 1 13 0c0 4.9-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/>'
+  };
+  function socialList(el, labeled) {
+    (window.SOCIAL || []).forEach(n => {
+      const li = tag('li'), a = tag('a', null, 'soc');
+      linkTo(a, n.url);
+      a.setAttribute('aria-label', n.name);
+      a.title = n.name;
+      a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+                    (SOCIAL_SVG[n.id] || SOCIAL_SVG.sharespot) + '</svg>';
+      if (labeled) a.append(tag('span', n.name));
+      li.append(a); el.append(li);
+    });
+  }
+  socialList($('social-top'), false);
+  socialList($('social-foot'), true);
 })();

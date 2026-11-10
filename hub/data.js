@@ -7,7 +7,8 @@
    repo      página do wallpaper dentro do repositório wallpapers
    downloads zips da release, um botão por plataforma (baixa direto)
    images    imagem estática para PC e celular, sem relógio nem player
-   accent    cor de destaque do wallpaper, usada nos detalhes da página */
+   accent    cor de destaque do wallpaper, usada nos detalhes da página
+   about     descrição em português (pt), inglês (en) e espanhol (es) */
 (function () {
   const REPO = 'https://github.com/EduardoHolkem/wallpapers';
   const page = id => `${REPO}/tree/main/${id}`;
@@ -27,7 +28,11 @@
       featured: true,
       accent: '#9b5cff',
       platforms: ['Wallpaper Engine', 'Lively'],
-      about: 'Inspirado em Lilacs, do Pastel Ghost. Fundo de quatro cores, fantasmas espelhados em neon, halo de luz RGB e glitch. Mostra a música que está tocando no Spotify ou no YouTube Music, com a letra sincronizada.',
+      about: {
+        pt: 'Inspirado em Lilacs, do Pastel Ghost. Fundo de quatro cores, fantasmas espelhados em neon, halo de luz RGB e glitch. Mostra a música que está tocando no Spotify ou no YouTube Music, com a letra sincronizada.',
+        en: 'Inspired by Pastel Ghost’s song Lilacs. A four-color background, mirrored neon ghosts, an RGB light halo and glitches. It shows the song playing on Spotify or YouTube Music, with synced lyrics.',
+        es: 'Inspirado en Lilacs, de Pastel Ghost. Fondo de cuatro colores, fantasmas de neón reflejados, halo de luz RGB y glitch. Muestra la canción que suena en Spotify o YouTube Music, con la letra sincronizada.'
+      },
       tech: ['HTML', 'CSS', 'JavaScript', 'Canvas API', 'LRCLIB'],
       poster: 'assets/posters/lilacs.jpg',
       live: 'live/lilacs/',
@@ -41,7 +46,11 @@
       featured: true,
       accent: '#ff4d5e',
       platforms: ['Wallpaper Engine', 'Lively'],
-      about: 'Daemon Targaryen sobre um fundo vermelho escuro. Brasas douradas e vermelhas sobem na frente dele, encolhendo como se esfriassem, e um brilho pulsa atrás como uma fogueira.',
+      about: {
+        pt: 'Daemon Targaryen sobre um fundo vermelho escuro. Brasas douradas e vermelhas sobem na frente dele, encolhendo como se esfriassem, e um brilho pulsa atrás como uma fogueira.',
+        en: 'Daemon Targaryen against a dark red background. Gold and red embers rise in front of him, shrinking as if they were cooling down, while a glow pulses behind him like a bonfire.',
+        es: 'Daemon Targaryen sobre un fondo rojo oscuro. Brasas doradas y rojas suben frente a él, encogiéndose como si se enfriaran, mientras un resplandor late detrás como una hoguera.'
+      },
       tech: ['HTML', 'CSS', 'JavaScript', 'Canvas API'],
       poster: 'assets/posters/daemon-hd.jpg',
       live: 'live/daemon/',
@@ -55,7 +64,11 @@
       featured: true,
       accent: '#cfe3ff',
       platforms: ['Wallpaper Engine', 'Lively'],
-      about: 'Jon Snow no meio de uma nevasca. A neve cai na frente dele em velocidades diferentes, com um brilho azulado pulsando nas costas.',
+      about: {
+        pt: 'Jon Snow no meio de uma nevasca. A neve cai na frente dele em velocidades diferentes, com um brilho azulado pulsando nas costas.',
+        en: 'Jon Snow in the middle of a blizzard. Snow falls in front of him at different speeds, with a bluish glow pulsing behind him.',
+        es: 'Jon Snow en medio de una ventisca. La nieve cae frente a él a distintas velocidades, con un resplandor azulado que late a su espalda.'
+      },
       tech: ['HTML', 'CSS', 'JavaScript', 'Canvas API'],
       poster: 'assets/posters/jonsnow-hd.jpg',
       live: 'live/jon-snow/',
@@ -63,5 +76,13 @@
       downloads: zips('jon-snow', '1.1.1', 'JonSnow'),
       images: stills('JonSnow')
     }
+  ];
+
+  // redes sociais, mostradas no topo e no rodapé (o ícone de cada uma está no app.js)
+  window.SOCIAL = [
+    { id: 'instagram', name: 'Instagram', url: 'https://www.instagram.com/eduardoholkem/' },
+    { id: 'tiktok',    name: 'TikTok',    url: 'https://www.tiktok.com/@eduardosholkem' },
+    { id: 'pinterest', name: 'Pinterest', url: 'https://pin.it/1v8NKEYos' },
+    { id: 'sharespot', name: 'ShareSpot', url: 'https://www.sharespotapp.com/eduardoholkem' }
   ];
 })();

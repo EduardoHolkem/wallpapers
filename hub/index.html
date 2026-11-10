@@ -16,25 +16,29 @@
   <div class="grain" aria-hidden="true"></div>
   <div class="vignette" aria-hidden="true"></div>
 
+  <!-- Os textos marcados com data-i18n são trocados pelo idioma escolhido
+       (hub/i18n.js). O que está escrito aqui é o português, usado se o
+       script não carregar. -->
   <main>
     <!-- ===== Destaques ===== -->
     <section class="app hero">
       <div class="side">
         <header class="brand">
-          <p class="kicker"><span class="dot"></span>blue vibe <span class="sep">/</span> coleção</p>
-          <h1 class="title"><span>Hub de</span><span>Wallpapers</span></h1>
+          <p class="kicker"><span class="dot"></span>blue vibe <span class="sep">/</span> <span data-i18n="kicker">coleção</span></p>
+          <h1 class="title"><span data-i18n="title1">Hub de</span><span data-i18n="title2">Wallpapers</span></h1>
           <p class="lead">Wallpapers animados para Wallpaper Engine e Lively. Passe o mouse em um deles para ver a prévia.</p>
+          <ul class="social" id="social-top"></ul>
         </header>
 
-        <nav class="list-wrap" aria-label="Destaques">
-          <div class="list-head"><span>destaques</span><span id="count">00</span></div>
+        <nav class="list-wrap" aria-label="Destaques" data-i18n-aria="featuredNav">
+          <div class="list-head"><span data-i18n="featured">destaques</span><span id="count">00</span></div>
           <ol class="list" id="list"></ol>
         </nav>
       </div>
 
       <div class="stage" aria-live="polite">
         <div class="stage-bar">
-          <span class="live"><i></i>prévia</span>
+          <span class="live"><i></i><span data-i18n="preview">prévia</span></span>
           <span class="stage-name" id="stage-name"></span>
           <span class="stage-count" id="stage-count">01 / 01</span>
         </div>
@@ -57,8 +61,8 @@
         </article>
       </div>
 
-      <a class="cue" href="#catalogo" aria-label="Ir para o catálogo">
-        <span>catálogo</span><i></i>
+      <a class="cue" href="#catalogo" aria-label="Ir para o catálogo" data-i18n-aria="cueAria">
+        <span data-i18n="cue">catálogo</span><i></i>
       </a>
     </section>
 
@@ -66,8 +70,8 @@
     <section class="catalog" id="catalogo">
       <header class="cat-head">
         <div>
-          <p class="kicker"><span class="dot"></span>todos os wallpapers</p>
-          <h2 class="cat-title">Catálogo</h2>
+          <p class="kicker"><span class="dot"></span><span data-i18n="allWallpapers">todos os wallpapers</span></p>
+          <h2 class="cat-title" data-i18n="catalog">Catálogo</h2>
         </div>
         <p class="cat-sub">Cada wallpaper que eu já criei, com prévia ao vivo. Passe o mouse para ver rodando e clique para abrir.</p>
         <span class="cat-count" id="cat-count"></span>
@@ -76,11 +80,15 @@
     </section>
 
     <footer class="foot">
-      <a href="https://github.com/EduardoHolkem" target="_blank" rel="noopener">Eduardo Holkem</a>
-      <span>feito em HTML, CSS e JavaScript</span>
+      <ul class="social labeled" id="social-foot"></ul>
+      <p class="foot-line">
+        <a href="https://github.com/EduardoHolkem" target="_blank" rel="noopener">Eduardo Holkem</a>
+        <span data-i18n="madeWith">feito com HTML, CSS e JavaScript</span>
+      </p>
     </footer>
   </main>
 
+  <script src="i18n.js"></script>
   <script src="data.js"></script>
   <script src="app.js"></script>
 </body>
