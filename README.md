@@ -11,7 +11,7 @@ Wallpapers animados para **Wallpaper Engine** e **Lively Wallpaper**, feitos com
 
 <br/>
 
-O [hub](https://eduardoholkem.github.io/wallpapers/) é a vitrine. Lá dá para ver cada wallpaper rodando ao vivo e escolher qual baixar. Este repositório guarda os wallpapers. Cada um tem a sua pasta, com código, configurações, prévia e um README próprio. O hub fala português, inglês e espanhol, escolhe sozinho pelo idioma do navegador e tem os links das minhas redes.
+O [hub](https://eduardoholkem.github.io/wallpapers/) é a vitrine. Lá dá para ver cada wallpaper rodando ao vivo e escolher qual baixar. Este repositório guarda os wallpapers. Cada um tem a sua pasta, com código, configurações, prévia e um README próprio. O hub fala português, inglês, espanhol, alemão e russo, escolhe sozinho pelo idioma do navegador e tem os links das minhas redes.
 
 ## Wallpapers
 
@@ -36,7 +36,7 @@ O passo a passo completo fica no README de cada wallpaper.
 ```
 wallpapers
 ├── hub/                  site do hub (publicado no GitHub Pages)
-│   ├── i18n.js           textos do site em português, inglês e espanhol
+│   ├── i18n.js           textos do site nos cinco idiomas
 │   └── data.js           wallpapers e redes sociais
 ├── lilacs/               um wallpaper por pasta
 │   ├── src/              código (index.html e imagens)
