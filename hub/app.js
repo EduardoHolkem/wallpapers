@@ -49,6 +49,20 @@
   modeText();
 
   function tag(name, text, cls) { const e = document.createElement(name); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; }
+  // Capa com plano B: se a imagem falhar (rede instável, cópia ruim no cache),
+  // tenta de novo uma vez sem cache; se falhar outra vez, entra um fundo na cor
+  // do wallpaper com o nome dele, nunca o ícone de imagem quebrada.
+  function setPoster(img, w) {
+    let tries = 0;
+    img.onerror = () => {
+      if (tries++ === 0) { img.src = w.poster + (w.poster.includes('?') ? '&' : '?') + 'r=' + Date.now(); return; }
+      img.onerror = null;
+      const fb = tag('div', w.name, img.className + ' poster-fallback');
+      fb.style.setProperty('--a', w.accent);
+      img.replaceWith(fb);
+    };
+    img.src = w.poster;
+  }
   function linkTo(a, href) { a.href = href; a.target = '_blank'; a.rel = 'noopener'; }
 
   /* ================= Destaques ================= */
@@ -133,7 +147,7 @@
       el = document.createElement('video');
       Object.assign(el, { src: w.video, muted: true, loop: true, autoplay: true, playsInline: true });
     } else {
-      el = new Image(); el.src = w.poster; el.alt = 'Prévia do wallpaper ' + w.name;
+      el = new Image(); el.alt = 'Prévia do wallpaper ' + w.name; setPoster(el, w);
     }
     addLayer(el);
     // no modo leve o wallpaper só roda quando a pessoa aperta "ver rodando"
@@ -217,7 +231,7 @@
       `<div class="card-media"><img loading="lazy" alt=""><p class="card-about"></p></div>` +
       `<div class="card-body"><span class="card-num">${pad(i + 1)}</span><h3 class="card-name"></h3><span class="card-tags"></span></div>`;
     const img = a.querySelector('img');
-    img.src = w.poster; img.alt = 'Capa do wallpaper ' + w.name;
+    img.alt = 'Capa do wallpaper ' + w.name; setPoster(img, w);
     a.querySelector('.card-about').textContent = w.about;
     a.querySelector('.card-name').textContent = w.name;
     a.querySelector('.card-tags').textContent = w.platforms.map(p => p === 'Wallpaper Engine' ? 'WE' : p).join(' / ');

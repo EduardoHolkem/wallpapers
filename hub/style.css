@@ -363,6 +363,13 @@ iframe.layer{pointer-events:none}
   .cfg-panel{top:48px}
 }
 
+/* capa que não carregou: fundo na cor do wallpaper com o nome */
+.poster-fallback{
+  position:absolute;inset:0;display:grid;place-items:center;
+  background:radial-gradient(circle at 50% 60%,color-mix(in srgb,var(--a) 40%,transparent),transparent 70%),#030817;
+  font-family:var(--display);font-weight:700;font-size:clamp(16px,2vw,30px);letter-spacing:.1em;text-transform:uppercase;color:var(--ice);
+}
+
 /* modo apresentação (?tour): tela limpa para gravar vídeo */
 .tour,.tour *{cursor:none !important}
 .tour{scrollbar-width:none}

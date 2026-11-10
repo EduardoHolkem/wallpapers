@@ -38,7 +38,7 @@
       platforms: ['Wallpaper Engine', 'Lively'],
       about: 'Daemon Targaryen sobre um fundo vermelho escuro. Brasas douradas e vermelhas sobem na frente dele, encolhendo como se esfriassem, e um brilho pulsa atrás como uma fogueira.',
       tech: ['HTML', 'CSS', 'JavaScript', 'Canvas API'],
-      poster: 'assets/posters/daemon.jpg',
+      poster: 'assets/posters/daemon-hd.jpg',
       live: 'live/daemon/',
       repo: page('daemon'),
       downloads: zips('daemon', '1.1.0', 'Daemon')
@@ -51,7 +51,7 @@
       platforms: ['Wallpaper Engine', 'Lively'],
       about: 'Jon Snow no meio de uma nevasca. A neve cai na frente dele em velocidades diferentes, com um brilho azulado pulsando nas costas.',
       tech: ['HTML', 'CSS', 'JavaScript', 'Canvas API'],
-      poster: 'assets/posters/jonsnow.jpg',
+      poster: 'assets/posters/jonsnow-hd.jpg',
       live: 'live/jon-snow/',
       repo: page('jon-snow'),
       downloads: zips('jon-snow', '1.1.0', 'JonSnow')
