@@ -342,9 +342,13 @@ iframe.layer{pointer-events:none}
 .switch i{position:absolute;top:3px;left:3px;width:16px;height:16px;background:var(--muted);transition:transform .25s var(--ease),background .25s}
 .switch[aria-checked=true]{background:color-mix(in srgb,var(--acc) 35%,rgba(8,20,64,.8));border-color:var(--acc)}
 .switch[aria-checked=true] i{transform:translateX(22px);background:#fff}
-/* idioma no painel de configurações */
-.cfg-lang{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);align-items:center}
-.langs{display:flex;gap:6px;flex:none}
+/* russo: a Space Grotesk não tem cirílico, então o texto corrido usa a Onest,
+   que tem um desenho parecido (Unbounded e JetBrains Mono já têm cirílico) */
+:root:lang(ru){--body:'Onest',system-ui,sans-serif}
+
+/* idioma no painel de configurações: nome em cima, botões embaixo */
+.cfg-lang{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);flex-direction:column;align-items:stretch;gap:10px}
+.langs{display:flex;gap:6px;flex-wrap:wrap}
 .lang-btn{
   width:42px;height:30px;cursor:pointer;font:inherit;font-family:var(--mono);font-size:11px;letter-spacing:.12em;
   color:var(--muted);background:rgba(8,20,64,.6);border:1px solid var(--line-strong);

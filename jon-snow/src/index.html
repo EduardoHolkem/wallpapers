@@ -94,8 +94,8 @@
 
   /* ================= Relógio ================= */
   const clockTime=document.getElementById('clock-time'), clockDate=document.getElementById('clock-date');
-  // data em português; a prévia do hub pode pedir inglês ou espanhol (?lang=en ou es)
-  const LOCALE={en:'en-US',es:'es-ES'}[new URLSearchParams(location.search).get('lang')]||'pt-BR';
+  // data em português; a prévia do hub pode pedir outro idioma (?lang=en, es, de ou ru)
+  const LOCALE={en:'en-US',es:'es-ES',de:'de-DE',ru:'ru-RU'}[new URLSearchParams(location.search).get('lang')]||'pt-BR';
   const dateFmt=new Intl.DateTimeFormat(LOCALE,{day:'numeric',month:'long',year:'numeric'});
   const two=n=>String(n).padStart(2,'0');
   function updateClock(){

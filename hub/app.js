@@ -18,11 +18,11 @@
   const isTouch = () => lastPointer === 'touch' || (noHover && lastPointer !== 'keyboard');
 
   /* ================= Idioma =================
-     Português, inglês ou espanhol. Vale o ?lang= do endereço ou o que a pessoa
-     escolheu no painel (guardado no navegador). Sem escolha, segue o idioma do
-     navegador, e quem não fala português nem espanhol vê o site em inglês. */
+     Português, inglês, espanhol, alemão ou russo. Vale o ?lang= do endereço ou
+     o que a pessoa escolheu no painel (guardado no navegador). Sem escolha,
+     segue o idioma do navegador, e quem não fala nenhum deles vê o inglês. */
   const I18N = window.HUB_I18N || {};
-  const LANGS = ['pt', 'en', 'es'];
+  const LANGS = ['pt', 'en', 'es', 'de', 'ru'];
   const LANG_KEY = 'hub-idioma';
   function pickLang() {
     const q = new URLSearchParams(location.search).get('lang');

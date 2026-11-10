@@ -4,7 +4,7 @@
    de música. No Wallpaper Engine e no Lively a música e a letra vêm do
    player de verdade. */
 (function () {
-  // o hub manda o idioma no endereço (?lang=pt, en ou es)
+  // o hub manda o idioma no endereço (?lang=pt, en, es, de ou ru)
   const LANG = (new URLSearchParams(location.search).get('lang') || 'pt').slice(0, 2);
   const TEXT = {
     pt: { title: 'Demo do wallpaper', lines: [
@@ -54,6 +54,38 @@
       'mueve el cursor para ver el parallax',
       'descárgalo para Wallpaper Engine o Lively',
       'hecho con HTML, CSS y JavaScript'
+    ] },
+    de: { title: 'Wallpaper-Demo', lines: [
+      'das ist eine Demo',
+      'auf deinem PC kommt die Musik von Spotify',
+      'oder von YouTube Music im Browser',
+      'der Songtext wird automatisch gesucht',
+      'und folgt dem Takt des Songs',
+      '',
+      'vier Farben kreisen im Hintergrund',
+      'gespiegelte Neon-Geister',
+      'ein RGB-Lichtschein hinter ihr',
+      'Glitch, Körnung und Scanlines',
+      '',
+      'bewege die Maus für den Parallax-Effekt',
+      'lade es für Wallpaper Engine oder Lively herunter',
+      'erstellt mit HTML, CSS und JavaScript'
+    ] },
+    ru: { title: 'Демо обоев', lines: [
+      'это демонстрация',
+      'на вашем ПК музыка идёт из Spotify',
+      'или из YouTube Music в браузере',
+      'текст песни ищется автоматически',
+      'и идёт в такт музыке',
+      '',
+      'четыре цвета кружатся на фоне',
+      'зеркальные неоновые призраки',
+      'RGB-ореол позади неё',
+      'глитч, зерно и сканлайны',
+      '',
+      'двигайте мышью, чтобы увидеть параллакс',
+      'скачайте для Wallpaper Engine или Lively',
+      'сделано на HTML, CSS и JavaScript'
     ] }
   };
   const ARTIST = 'Eduardo Holkem';
