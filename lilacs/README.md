@@ -84,7 +84,7 @@ Baixe o arquivo da sua plataforma na [release do Lilacs](https://github.com/Edua
 <summary><b>Sem Wallpaper Engine nem Lively</b></summary>
 <br/>
 
-Baixe a imagem estática, sem relógio, sem a caixa da música e sem o glitch, e use como papel de parede comum no PC ou no celular.
+Baixe a imagem estática, sem relógio, sem a caixa da música e sem o glitch, e use como papel de parede comum no PC ou no celular. Ela leva a minha assinatura bem pequena no canto inferior direito.
 
 - [Imagem para PC (2560x1440)](https://eduardoholkem.github.io/wallpapers/imagens/Lilacs-PC.jpg)
 - [Imagem para celular (1080x2340)](https://eduardoholkem.github.io/wallpapers/imagens/Lilacs-Celular.jpg)
