@@ -363,6 +363,12 @@ iframe.layer{pointer-events:none}
   .cfg-panel{top:48px}
 }
 
+/* modo apresentação (?tour): tela limpa para gravar vídeo */
+.tour,.tour *{cursor:none !important}
+.tour{scrollbar-width:none}
+.tour::-webkit-scrollbar{display:none}
+.tour .cfg{display:none}
+
 /* ---------- modo leve (padrão) ----------
    O site abre assim: o fundo vira uma imagem parada (vinheta e linhas já
    desenhadas nela), sem granulação, sem animações que não param e sem
