@@ -11,9 +11,9 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const WALLPAPERS = [
-  { id: 'lilacs',   name: 'Lilacs',  version: '2.0.0', demo: 'demo.js' },
-  { id: 'daemon',   name: 'Daemon',  version: '1.0.0' },
-  { id: 'jon-snow', name: 'JonSnow', version: '1.0.0' }
+  { id: 'lilacs',   name: 'Lilacs',  version: '2.0.1', demo: 'demo.js' },
+  { id: 'daemon',   name: 'Daemon',  version: '1.0.1' },
+  { id: 'jon-snow', name: 'JonSnow', version: '1.0.1' }
 ];
 
 const root = __dirname;

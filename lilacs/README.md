@@ -5,7 +5,7 @@
 <br/>
 
 <a href="https://eduardoholkem.github.io/wallpapers/live/lilacs/"><img src="https://img.shields.io/badge/ver%20a%20demo-9b5cff?style=for-the-badge&logo=googlechrome&logoColor=white"/></a>
-<a href="https://github.com/EduardoHolkem/wallpapers/releases/tag/lilacs-v2.0.0"><img src="https://img.shields.io/badge/baixar-ff3fb4?style=for-the-badge&logo=github&logoColor=white"/></a>
+<a href="https://github.com/EduardoHolkem/wallpapers/releases/tag/lilacs-v2.0.1"><img src="https://img.shields.io/badge/baixar-ff3fb4?style=for-the-badge&logo=github&logoColor=white"/></a>
 <img src="https://img.shields.io/badge/Wallpaper%20Engine-2e6bff?style=for-the-badge&logo=steam&logoColor=white"/>
 <img src="https://img.shields.io/badge/Lively%20Wallpaper-2ff3e0?style=for-the-badge&logo=windows&logoColor=0d0718"/>
 
@@ -53,11 +53,12 @@ Existem duas versões com o mesmo código, uma para o **Wallpaper Engine** (Stea
 | **Parallax** | as camadas reagem ao mouse em profundidades diferentes |
 | **Relógio discreto** | opcional, só hora e dia, sem brilho |
 | **Leve** | efeitos borrados desenhados em resolução menor, personagem desenhada uma vez só e três níveis de qualidade |
+| **Qualquer tela** | partículas, caixa da música e relógio acompanham o tamanho da tela, então fica igual num monitor grande, num notebook ou num Steam Deck |
 | **Tudo ajustável** | cada efeito pode ser desligado nas configurações do Wallpaper Engine e do Lively |
 
 ## Instalação
 
-Baixe o arquivo da sua plataforma na [release do Lilacs](https://github.com/EduardoHolkem/wallpapers/releases/tag/lilacs-v2.0.0). Todos os wallpapers ficam no [hub](https://eduardoholkem.github.io/wallpapers/).
+Baixe o arquivo da sua plataforma na [release do Lilacs](https://github.com/EduardoHolkem/wallpapers/releases/tag/lilacs-v2.0.1). Todos os wallpapers ficam no [hub](https://eduardoholkem.github.io/wallpapers/).
 
 <details open>
 <summary><b>Wallpaper Engine</b></summary>

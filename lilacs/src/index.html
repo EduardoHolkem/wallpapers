@@ -15,7 +15,7 @@
     .wallpaper{position:relative;width:100%;height:100%;overflow:hidden}
     /* 1u = 1px numa tela de 1280px de largura. Relógio e caixa da música
        crescem e encolhem junto com a tela, inclusive numa prévia pequena. */
-    :root{--u:clamp(.3px,.078125vw,2px)}
+    :root{--u:clamp(.2px,.078125vw,2px);--s:1}  /* --s = escala da caixa e do relógio, calculada no script */
 
     /* Cena: fundo de 4 cores, feixes, fantasmas, halo, partículas e vinheta.
        Tudo isso é borrado, então é desenhado numa resolução menor e ampliado. */
@@ -44,32 +44,33 @@
        com um fio nas 4 cores do fundo do lado */
     .clock{
       position:absolute;top:calc(16*var(--u));left:calc(17*var(--u));z-index:12;
-      padding-left:calc(8*var(--u));border-left:1px solid transparent;
+      padding-left:8px;border-left:1px solid transparent;
       border-image:linear-gradient(180deg,#ff3fb4,#9b5cff,#2e6bff,#2ff3e0) 1;
       color:#dcd0ff;opacity:.7;line-height:1;
       font-weight:300;letter-spacing:.3em;text-transform:lowercase;
     }
-    .clock .time{font-size:calc(11.4*var(--u))}
-    .clock .date{font-size:calc(6.7*var(--u));margin-top:calc(4.7*var(--u));opacity:.75;letter-spacing:.25em}
+    .clock{transform:scale(var(--s));transform-origin:0 0}
+    .clock .time{font-size:11.4px}
+    .clock .date{font-size:6.7px;margin-top:4.7px;opacity:.75;letter-spacing:.25em}
     .hidden{display:none !important}
 
     /* ===== Caixa "tocando agora" (Spotify / YouTube Music via Wallpaper Engine) ===== */
     .player{
       --accent:#9b5cff;
       position:absolute;z-index:13;
-      width:calc(222*var(--u));height:calc(243*var(--u));
+      width:222px;height:243px;
       display:flex;flex-direction:column;
-      padding:calc(12*var(--u));border-radius:calc(14*var(--u));
+      padding:12px;border-radius:14px;
       background:linear-gradient(135deg,rgba(20,10,40,.8),rgba(10,5,25,.68));
       border:1px solid rgba(255,255,255,.12);
       box-shadow:0 0 0 1px rgba(0,0,0,.2),0 10px 40px rgba(0,0,0,.45),0 0 38px -8px var(--accent);
-      color:#fff;opacity:0;transform:translateY(14px);pointer-events:none;overflow:hidden;
+      color:#fff;opacity:0;transform:translateY(14px) scale(var(--s));pointer-events:none;overflow:hidden;
       transition:opacity .6s ease,transform .6s ease,box-shadow 1.2s ease,
                  height .7s cubic-bezier(.3,.8,.25,1);
     }
     /* Sem letra (ou depois que a letra acaba) a caixa encolhe até ficar só
        capa, música e banda. Ela cresce e encolhe a partir do canto preso. */
-    .player.compact{height:var(--compact-h,calc(92*var(--u)))}
+    .player.compact{height:var(--compact-h,92px)}
     .player .lyrics{transition:opacity .45s ease .2s}
     .player.compact .lyrics{opacity:0;transition-delay:0s}
     /* vidro fosco só na qualidade alta: ele refaz o desfoque a cada quadro */
@@ -77,14 +78,14 @@
       background:linear-gradient(135deg,rgba(20,10,40,.55),rgba(10,5,25,.35));
       backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);
     }
-    .player.show{opacity:1;transform:none}
-    .player.pos-bl{left:calc(6*var(--u));bottom:calc(6*var(--u))}
-    .player.pos-br{right:calc(6*var(--u));bottom:calc(6*var(--u))}
-    .player.pos-tr{right:calc(6*var(--u));top:calc(6*var(--u))}
-    .player .head{display:flex;gap:calc(10*var(--u));align-items:center;flex:none}
+    .player.show{opacity:1;transform:scale(var(--s))}
+    .player.pos-bl{left:calc(6*var(--u));bottom:calc(6*var(--u));transform-origin:0 100%}
+    .player.pos-br{right:calc(6*var(--u));bottom:calc(6*var(--u));transform-origin:100% 100%}
+    .player.pos-tr{right:calc(6*var(--u));top:calc(6*var(--u));transform-origin:100% 0}
+    .player .head{display:flex;gap:10px;align-items:center;flex:none}
     .player .cover{
       position:relative;overflow:hidden;isolation:isolate;
-      width:calc(52*var(--u));height:calc(52*var(--u));border-radius:calc(9*var(--u));flex:none;
+      width:52px;height:52px;border-radius:9px;flex:none;
       background:linear-gradient(135deg,#ff3fb4,#9b5cff,#2e6bff,#2ff3e0);
       box-shadow:0 0 18px -2px var(--accent);
     }
@@ -96,24 +97,24 @@
     .player .cover img:not([src]){display:none}
     .player.paused .cover{filter:grayscale(.5) brightness(.8)}
     .player .meta{min-width:0;flex:1}
-    .player .title{font-size:calc(13*var(--u));font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    .player .title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
       text-shadow:-1px 0 rgba(255,60,170,.6),1px 0 rgba(60,230,255,.6)}
-    .player .artist{font-size:calc(10.5*var(--u));opacity:.75;margin-top:calc(2*var(--u));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.5px}
-    .player .bar{margin-top:calc(10*var(--u));height:calc(3*var(--u));border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden;flex:none}
+    .player .artist{font-size:10.5px;opacity:.75;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.5px}
+    .player .bar{margin-top:10px;height:3px;border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden;flex:none}
     .player .bar i{display:block;height:100%;width:0;border-radius:3px;
       background:linear-gradient(90deg,#ff3fb4,#9b5cff,#2e6bff,#2ff3e0)}
-    .player .times{display:flex;justify-content:space-between;font-size:calc(8.5*var(--u));opacity:.55;margin-top:calc(3*var(--u));letter-spacing:1px;flex:none}
-    .player .state{position:absolute;top:calc(10*var(--u));right:calc(10*var(--u));width:calc(7*var(--u));height:calc(7*var(--u));border-radius:50%;background:#2ff3e0;box-shadow:0 0 8px #2ff3e0}
+    .player .times{display:flex;justify-content:space-between;font-size:8.5px;opacity:.55;margin-top:3px;letter-spacing:1px;flex:none}
+    .player .state{position:absolute;top:10px;right:10px;width:7px;height:7px;border-radius:50%;background:#2ff3e0;box-shadow:0 0 8px #2ff3e0}
     .player.paused .state{background:#888;box-shadow:none}
 
-    .lyrics{margin-top:calc(10*var(--u));position:relative;flex:1;min-height:0;overflow:hidden;
+    .lyrics{margin-top:10px;position:relative;flex:1;min-height:0;overflow:hidden;
       -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 12%,#000 80%,transparent 100%);
               mask-image:linear-gradient(180deg,transparent 0,#000 12%,#000 80%,transparent 100%)}
     /* lista com a letra inteira que rola sozinha, deixando a linha atual perto do topo */
     .lyrics .scroll{position:absolute;left:0;right:0;top:0;padding-right:7%;
       transition:transform .55s cubic-bezier(.25,.8,.25,1);will-change:transform}
-    .lyrics .line{font-size:calc(13.5*var(--u));line-height:1.3;font-weight:600;
-      margin:0 0 calc(6*var(--u));opacity:.22;transform-origin:0 50%;
+    .lyrics .line{font-size:13.5px;line-height:1.3;font-weight:600;
+      margin:0 0 6px;opacity:.22;transform-origin:0 50%;
       transition:opacity .45s ease,transform .45s ease,text-shadow .45s ease}
     .lyrics .line.n1{opacity:.55}
     .lyrics .line.n2{opacity:.36}
@@ -121,7 +122,7 @@
     .lyrics .line.cur{opacity:1;transform:scale(1.06);
       text-shadow:-1px 0 rgba(255,60,170,.75),1px 0 rgba(60,230,255,.75),0 0 16px var(--accent)}
     .lyrics .line.gap{letter-spacing:5px}
-    .lyrics .note{font-size:calc(10.5*var(--u));opacity:.5;letter-spacing:1px;position:absolute;top:50%;transform:translateY(-50%)}
+    .lyrics .note{font-size:10.5px;opacity:.5;letter-spacing:1px;position:absolute;top:50%;transform:translateY(-50%)}
   </style>
 </head>
 <body>
@@ -224,7 +225,7 @@
   const img=new Image();
   img.src='Lilacs.png';
 
-  let VW=0,VH=0,Q=.5;            // tela em px CSS e escala da cena
+  let VW=0,VH=0,Q=.5,MQ=.5;      // tela em px CSS, escala da cena e escala das partículas
   let W=0,H=0,S=0,PX=0,PY=0;     // na cena: tamanho, PNG desenhado e seu canto superior esquerdo
   let SC=0,PXc=0,PYc=0,PAD=0,D=1; // personagem em px CSS, margem lateral e densidade de pixels
   let ghosts=[], halo=[], fringe=[], sprites=[], beams=[], motes=[], vignette=null;
@@ -259,7 +260,8 @@
 
   /* Feixe de luz vindo do topo, já desfocado, na resolução do fundo */
   function beamSprite(color){
-    const w=bgc.width*0.34, h=bgc.height*1.4, blur=3, pad=blur*3;
+    // desfoque proporcional à tela, para o feixe não engordar numa tela pequena
+    const w=bgc.width*0.34, h=bgc.height*1.4, blur=Math.max(1,3*Math.min(VW/1920,VH/1080)), pad=Math.ceil(blur*3);
     const t=makeCanvas(w,h), tx=t.getContext('2d');
     const g=tx.createLinearGradient(0,0,0,h);
     g.addColorStop(0,rgba(color,.9));g.addColorStop(.75,rgba(color,0));
@@ -323,8 +325,14 @@
 
   function resize(){
     VW=window.innerWidth;VH=window.innerHeight;
+    // caixa da música e relógio são desenhados no tamanho de uma tela de 1280px
+    // e encolhidos ou ampliados inteiros; assim a letra nunca esbarra no tamanho
+    // mínimo de fonte do navegador numa tela pequena
+    document.documentElement.style.setProperty('--s',Math.max(.2,Math.min(2,VW/1280)).toFixed(4));
     const q=QUALITY[CONFIG.quality]||QUALITY.medium;
     Q=q.scale;
+    // partículas seguem o tamanho da tela (1920x1080 = 1), como todo o resto
+    MQ=Q*Math.min(VW/1920,VH/1080);
     W=scene.width=Math.max(2,Math.round(VW*Q));
     H=scene.height=Math.max(2,Math.round(VH*Q));
     bgc.width=Math.max(64,Math.round(VW/6));
@@ -339,8 +347,8 @@
   function newMote(anywhere){
     const ci=Math.floor(Math.random()*4);
     return {
-      x:Math.random()*W, y:anywhere?Math.random()*H:H+20*Q,
-      r:rand(4,13)*Q, vy:rand(6,22)*Q, sway:rand(8,30)*Q,
+      x:Math.random()*W, y:anywhere?Math.random()*H:H+20*MQ,
+      r:rand(4,13)*MQ, vy:rand(6,22)*MQ, sway:rand(8,30)*MQ,
       ph:Math.random()*Math.PI*2, tw:rand(.6,1.8), ci, sprite:sprites[ci]
     };
   }
@@ -443,8 +451,8 @@
       // Partículas de luz subindo
       if(CONFIG.motes)for(const m of motes){
         m.y-=m.vy*dt;
-        if(m.y<-30*Q)Object.assign(m,newMote(false));
-        const x=m.x+Math.sin(t*0.5+m.ph)*m.sway-smx*20*Q;
+        if(m.y<-30*MQ)Object.assign(m,newMote(false));
+        const x=m.x+Math.sin(t*0.5+m.ph)*m.sway-smx*20*MQ;
         const a=0.25+0.55*(0.5+0.5*Math.sin(t*m.tw+m.ph));
         sc.globalAlpha=a*Math.min(1,m.y/(H*0.25));
         const r=m.r*(0.8+0.3*Math.sin(t*m.tw*1.7+m.ph));
