@@ -6,7 +6,7 @@
   "color4": { "text": "Cor 4 (ciano)", "type": "color", "value": "#2FF3E0" },
 
   "labelDesempenho": { "type": "label", "value": "Desempenho" },
-  "quality": { "text": "Qualidade (use Leve em PC fraco)", "type": "dropdown", "value": 1, "items": ["Alta", "Equilibrada", "Leve"] },
+  "quality": { "text": "Qualidade (Automática se ajusta ao PC)", "type": "dropdown", "value": 0, "items": ["Automática", "Alta", "Equilibrada", "Leve", "Mínima (PC sem placa de vídeo)"] },
   "fps": { "text": "FPS", "type": "slider", "min": 15, "max": 60, "step": 1, "value": 30 },
 
   "labelEfeitos": { "type": "label", "value": "Efeitos" },

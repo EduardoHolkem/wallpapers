@@ -28,6 +28,17 @@
 				"type": "bool",
 				"value": true
 			},
+			"perf": {
+				"order": 5,
+				"text": "Desempenho (Automático liga o modo leve em PC fraco)",
+				"type": "combo",
+				"value": "auto",
+				"options": [
+					{ "label": "Automático", "value": "auto" },
+					{ "label": "Completo", "value": "full" },
+					{ "label": "Leve (PC sem placa de vídeo)", "value": "lite" }
+				]
+			},
 			"fps": {
 				"order": 4,
 				"text": "FPS",

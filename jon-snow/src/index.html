@@ -28,12 +28,7 @@
       position:absolute;top:50%;left:50%;z-index:2;
       width:80vmin;height:80vmin;margin:-40vmin 0 0 -40vmin;
       background:radial-gradient(circle,rgba(80,140,200,.28) 0%,rgba(80,140,200,.12) 35%,rgba(80,140,200,0) 70%);
-      will-change:transform,opacity;
-      animation:glow 5s ease-in-out infinite;
-    }
-    @keyframes glow{
-      0%,100%{opacity:.6;transform:scale(1)}
-      50%{opacity:1;transform:scale(1.1)}
+      opacity:.8;will-change:transform,opacity;
     }
 
     /* Personagem, com uma respiração bem leve */
@@ -42,12 +37,10 @@
       height:88vh;max-height:950px;
       transform:translateX(-50%);transform-origin:50% 100%;
       will-change:transform;
-      animation:breathe 6s ease-in-out infinite;
     }
-    @keyframes breathe{
-      0%,100%{transform:translateX(-50%) scale(1)}
-      50%{transform:translateX(-50%) scale(1.008)}
-    }
+    /* Modo leve: brilho e personagem ficam parados e entram na mesma camada
+       do fundo. Sem placa de vídeo, cada camada animada a mais custa caro. */
+    .lite .glow,.lite .person{will-change:auto}
 
     /* Neve na frente do Jon, desenhada em meia resolução */
     #snow{position:absolute;inset:0;width:100%;height:100%;z-index:8;pointer-events:none}
@@ -79,6 +72,7 @@
   const CONFIG = {
     fps: 30,
     amount: 1,      // quantidade de neve (1 = 100 flocos)
+    perf: 'auto',   // desempenho: auto, full (completo) ou lite (leve)
     scale: .5       // resolução do canvas da neve em relação à tela
   };
 
@@ -129,11 +123,72 @@
     flakes=Array.from({length:n},()=>newFlake(true));
   }
 
-  let last=0;
+  /* ================= Desempenho =================
+     Sem placa de vídeo (ou com ela bloqueada) o navegador monta a tela usando
+     o processador. Aí cada camada animada e cada canvas esticado pesam muito.
+     O modo leve deixa o brilho e a personagem parados na mesma camada do fundo
+     e desenha o canvas no tamanho real da tela, sem esticar. No automático ele
+     liga sozinho quando não há placa de vídeo ou quando o FPS não se sustenta. */
+  const glowEl=document.getElementById('glow'), personEl=document.querySelector('.person');
+  const SOFT=(()=>{
+    try{
+      const c=document.createElement('canvas'),g=c.getContext('webgl')||c.getContext('experimental-webgl');
+      if(!g)return true;
+      const d=g.getExtension('WEBGL_debug_renderer_info');
+      const r=String(g.getParameter(d?d.UNMASKED_RENDERER_WEBGL:g.RENDERER));
+      const l=g.getExtension('WEBGL_lose_context');if(l)l.loseContext();
+      return /swiftshader|llvmpipe|softpipe|software|basic render/i.test(r);
+    }catch(e){return true;}
+  })();
+  const URL_LITE=new URLSearchParams(location.search).get('leve');   // ?leve=1 força, ?leve=0 desliga
+  let lite=false, slow=false, fpsCap=60;
+  function applyPerf(){
+    const on=CONFIG.perf==='lite'||(CONFIG.perf==='auto'&&(URL_LITE!=null?URL_LITE!=='0':SOFT||slow));
+    if(CONFIG.perf!=='auto')fpsCap=60;
+    if(on===lite&&W)return;
+    lite=on;
+    document.body.classList.toggle('lite',lite);
+    glowEl.style.transform=personEl.style.transform=glowEl.style.opacity='';
+    CONFIG.scale=lite?1:.5;
+    resize();
+  }
+  // Conta os quadros de verdade. Se ficarem bem abaixo do FPS pedido por dois
+  // trechos seguidos de 3 segundos, o automático alivia: primeiro liga o modo
+  // leve e, se ainda faltar, baixa o FPS para 20.
+  const watch={t0:0,n:0,prev:0,bad:0};
+  function watchFrame(now){
+    if(now-watch.prev>600)watch.t0=0;          // wallpaper pausado: recomeça a conta
+    watch.prev=now;
+    if(!watch.t0){watch.t0=now;watch.n=0;return;}
+    watch.n++;
+    if(now-watch.t0<3000)return;
+    const fps=watch.n*1000/(now-watch.t0), want=Math.min(CONFIG.fps,fpsCap);
+    window.__perf={fps:+fps.toFixed(1),lite,fpsCap};
+    watch.t0=now;watch.n=0;
+    if(fps>=want*.8){watch.bad=0;return;}
+    if(++watch.bad<2||CONFIG.perf!=='auto')return;
+    watch.bad=0;
+    if(!lite){slow=true;applyPerf();}
+    else if(fpsCap>20)fpsCap=20;
+  }
+
+  let last=0,prev=0;
   function loop(now){
     requestAnimationFrame(loop);
-    if(now-last<1000/CONFIG.fps-1)return;
-    const dt=Math.min(.1,(now-last)/1000||0);last=now;
+    // agenda o próximo quadro pela média: se o PC não chega ao dobro do limite,
+    // ele não pula um quadro sim, um não (o que cortaria o FPS pela metade)
+    const iv=1000/Math.min(CONFIG.fps,fpsCap);
+    if(now<last+iv-1)return;
+    last=Math.max(last+iv,now-iv);
+    const dt=Math.min(.1,(now-prev)/1000||0);prev=now;
+    watchFrame(now);
+    if(!lite){
+      // brilho pulsando (5 s) e respiração (6 s), no mesmo ritmo do FPS
+      const t=now/1000, g=.5-.5*Math.cos(t*Math.PI*2/5), b=.5-.5*Math.cos(t*Math.PI*2/6);
+      glowEl.style.opacity=(.6+.4*g).toFixed(3);
+      glowEl.style.transform='scale('+(1+.1*g).toFixed(4)+')';
+      personEl.style.transform='translateX(-50%) scale('+(1+.008*b).toFixed(5)+')';
+    }
     ctx.clearRect(0,0,W,H);
     for(const f of flakes){
       f.y+=f.vy*dt;f.x+=f.vx*dt;
@@ -150,13 +205,18 @@
       if(p.showclock)document.getElementById('clock').classList.toggle('hidden',!p.showclock.value);
       if(p.glow)document.getElementById('glow').classList.toggle('hidden',!p.glow.value);
       if(p.fps)CONFIG.fps=Math.max(10,Math.min(60,p.fps.value));
+      if(p.perf){
+        const v=p.perf.value;
+        CONFIG.perf=typeof v==='number'?(['auto','full','lite'][v]||'auto'):v;   // Lively manda o índice
+        slow=false;applyPerf();
+      }
       if(p.amount){CONFIG.amount=p.amount.value/100;resize();}
     }
   };
   window.livelyPropertyListener=(name,value)=>window.wallpaperPropertyListener.applyUserProperties({[name]:{value}});
 
   addEventListener('resize',resize);
-  resize();
+  applyPerf();
   requestAnimationFrame(loop);
   </script>
 </body>

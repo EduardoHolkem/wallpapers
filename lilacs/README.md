@@ -5,7 +5,7 @@
 <br/>
 
 <a href="https://eduardoholkem.github.io/wallpapers/live/lilacs/"><img src="https://img.shields.io/badge/ver%20a%20demo-9b5cff?style=for-the-badge&logo=googlechrome&logoColor=white"/></a>
-<a href="https://github.com/EduardoHolkem/wallpapers/releases/tag/lilacs-v2.0.1"><img src="https://img.shields.io/badge/baixar-ff3fb4?style=for-the-badge&logo=github&logoColor=white"/></a>
+<a href="https://github.com/EduardoHolkem/wallpapers/releases/tag/lilacs-v2.1.0"><img src="https://img.shields.io/badge/baixar-ff3fb4?style=for-the-badge&logo=github&logoColor=white"/></a>
 <img src="https://img.shields.io/badge/Wallpaper%20Engine-2e6bff?style=for-the-badge&logo=steam&logoColor=white"/>
 <img src="https://img.shields.io/badge/Lively%20Wallpaper-2ff3e0?style=for-the-badge&logo=windows&logoColor=0d0718"/>
 
@@ -52,13 +52,13 @@ Existem duas versões com o mesmo código, uma para o **Wallpaper Engine** (Stea
 | **Estética VHS** | granulação animada, scanlines e vinheta |
 | **Parallax** | as camadas reagem ao mouse em profundidades diferentes |
 | **Relógio discreto** | opcional, só hora e dia, sem brilho |
-| **Leve** | efeitos borrados desenhados em resolução menor, personagem desenhada uma vez só e três níveis de qualidade |
+| **Leve** | efeitos borrados desenhados em resolução menor e personagem desenhada uma vez só. A qualidade automática percebe quando o PC não tem placa de vídeo ou não sustenta o FPS e vai baixando sozinha até a mínima |
 | **Qualquer tela** | partículas, caixa da música e relógio acompanham o tamanho da tela, então fica igual num monitor grande, num notebook ou num Steam Deck |
 | **Tudo ajustável** | cada efeito pode ser desligado nas configurações do Wallpaper Engine e do Lively |
 
 ## Instalação
 
-Baixe o arquivo da sua plataforma na [release do Lilacs](https://github.com/EduardoHolkem/wallpapers/releases/tag/lilacs-v2.0.1). Todos os wallpapers ficam no [hub](https://eduardoholkem.github.io/wallpapers/).
+Baixe o arquivo da sua plataforma na [release do Lilacs](https://github.com/EduardoHolkem/wallpapers/releases/tag/lilacs-v2.1.0). Todos os wallpapers ficam no [hub](https://eduardoholkem.github.io/wallpapers/).
 
 <details open>
 <summary><b>Wallpaper Engine</b></summary>
@@ -94,7 +94,7 @@ A letra não vem junto com o wallpaper. Quando a faixa muda, ele busca a letra s
 | Opção | Padrão | O que faz |
 |---|---|---|
 | Cor 1 a Cor 4 | rosa, lilás, azul, ciano | cores do fundo e dos fantasmas |
-| Qualidade | equilibrada | alta, equilibrada ou leve. Em PC mais antigo, use a leve |
+| Qualidade | automática | se ajusta ao PC sozinha. Também dá para fixar em alta, equilibrada, leve ou mínima, que foi feita para PC sem placa de vídeo |
 | FPS | 30 | limite de quadros por segundo |
 | Glitch na personagem | ligado | fatiamento rápido da imagem |
 | Contorno rosa e ciano | ligado | aberração cromática nas bordas da personagem |

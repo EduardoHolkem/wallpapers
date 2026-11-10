@@ -28,7 +28,7 @@
       poster: 'assets/posters/lilacs.jpg',
       live: 'live/lilacs/',
       repo: page('lilacs'),
-      downloads: zips('lilacs', '2.0.1', 'Lilacs')
+      downloads: zips('lilacs', '2.1.0', 'Lilacs')
     },
     {
       id: 'daemon',
@@ -41,7 +41,7 @@
       poster: 'assets/posters/daemon.jpg',
       live: 'live/daemon/',
       repo: page('daemon'),
-      downloads: zips('daemon', '1.0.1', 'Daemon')
+      downloads: zips('daemon', '1.1.0', 'Daemon')
     },
     {
       id: 'jon-snow',
@@ -54,7 +54,7 @@
       poster: 'assets/posters/jonsnow.jpg',
       live: 'live/jon-snow/',
       repo: page('jon-snow'),
-      downloads: zips('jon-snow', '1.0.1', 'JonSnow')
+      downloads: zips('jon-snow', '1.1.0', 'JonSnow')
     }
   ];
 })();

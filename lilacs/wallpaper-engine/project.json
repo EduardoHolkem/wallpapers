@@ -42,14 +42,16 @@
 			"quality" :
 			{
 				"order" : 5,
-				"text" : "Qualidade (use Leve em PC fraco)",
+				"text" : "Qualidade (Automática se ajusta ao PC)",
 				"type" : "combo",
-				"value" : "medium",
+				"value" : "auto",
 				"options" :
 				[
+					{ "label" : "Automática", "value" : "auto" },
 					{ "label" : "Alta", "value" : "high" },
 					{ "label" : "Equilibrada", "value" : "medium" },
-					{ "label" : "Leve", "value" : "low" }
+					{ "label" : "Leve", "value" : "low" },
+					{ "label" : "Mínima (PC sem placa de vídeo)", "value" : "lite" }
 				]
 			},
 			"fps" :

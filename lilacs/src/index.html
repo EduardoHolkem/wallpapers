@@ -24,20 +24,16 @@
     /* Personagem: desenhada uma vez só. Respiração e parallax ficam por conta
        do transform, que a placa de vídeo faz sem repintar nada. */
     #person-canvas{position:absolute;z-index:5;pointer-events:none;transform-origin:50% 100%;will-change:transform}
+    /* Qualidade mínima: personagem parada. Sem placa de vídeo, redimensionar a
+       camada dela a cada quadro (respiração) pesa mais do que todo o resto. */
+    .q-lite #person-canvas{will-change:auto}
 
-    /* Granulação e scanlines na mesma textura, que só muda de lugar */
+    /* Granulação e scanlines na mesma textura, que só muda de lugar. Quem
+       mexe nela é o loop, no mesmo FPS do resto; uma animação CSS rodaria a
+       60 quadros por segundo e, sem placa de vídeo, dobraria o trabalho. */
     .grain{
       position:absolute;inset:-240px;z-index:9;pointer-events:none;
       background-size:240px 240px;will-change:transform;
-      animation:grain .54s steps(1) infinite;
-    }
-    @keyframes grain{
-      0%{transform:translate(0,0)}
-      16.6%{transform:translate(-97px,53px)}
-      33.3%{transform:translate(61px,-118px)}
-      50%{transform:translate(-142px,-31px)}
-      66.6%{transform:translate(113px,88px)}
-      83.3%{transform:translate(-23px,137px)}
     }
 
     /* Relógio discreto: sem brilho nem sombra, só hora e dia em lilás claro,
@@ -159,7 +155,7 @@
     grain: 25,
     glitch: true,
     mouse: true,
-    quality: 'medium',
+    quality: 'auto',  // auto, high, medium, low ou lite
     // cada efeito pode ser desligado nas configurações do wallpaper
     beams: true,      // holofotes
     ghosts: true,     // sombras coloridas (fantasmas espelhados)
@@ -170,12 +166,15 @@
     vhs: true         // pontilhado e scanlines
   };
   const FX_KEYS = ['beams','ghosts','halo','motes','fringe','vignette','vhs'];
-  // scale = resolução da cena em relação à tela; motes = partículas de luz
+  // scale = resolução da cena em relação à tela; motes = partículas de luz;
+  // fps = limite próprio do nível (o menor entre ele e o FPS escolhido vale)
   const QUALITY = {
     high:   { scale: .75, motes: 55 },
     medium: { scale: .5,  motes: 45 },
-    low:    { scale: .34, motes: 30 }
+    low:    { scale: .34, motes: 30 },
+    lite:   { scale: .28, motes: 22, fps: 24 }   // mínima, para PC sem placa de vídeo
   };
+  const TIERS = ['high','medium','low','lite'];
   // Área ocupada pela personagem dentro do PNG (500x500)
   const IMG_SIZE = 500;
   const FIG = { x0: 85, x1: 412, y0: 82, y1: 500 };
@@ -329,7 +328,7 @@
     // e encolhidos ou ampliados inteiros; assim a letra nunca esbarra no tamanho
     // mínimo de fonte do navegador numa tela pequena
     document.documentElement.style.setProperty('--s',Math.max(.2,Math.min(2,VW/1280)).toFixed(4));
-    const q=QUALITY[CONFIG.quality]||QUALITY.medium;
+    const q=QUALITY[effQ()];
     Q=q.scale;
     // partículas seguem o tamanho da tela (1920x1080 = 1), como todo o resto
     MQ=Q*Math.min(VW/1920,VH/1080);
@@ -507,9 +506,13 @@
 
   function updatePerson(t){
     if(!fringe.length)return;
-    const breathe=1+0.008*Math.sin(t*(Math.PI*2/6));
-    const ox=smx*SC*0.006, oy=smy*SC*0.003;
-    pCanvas.style.transform=`translate(${ox.toFixed(2)}px,${oy.toFixed(2)}px) scale(${breathe.toFixed(4)})`;
+    if(effQ()==='lite'){
+      if(pCanvas.style.transform)pCanvas.style.transform='';
+    }else{
+      const breathe=1+0.008*Math.sin(t*(Math.PI*2/6));
+      const ox=smx*SC*0.006, oy=smy*SC*0.003;
+      pCanvas.style.transform=`translate(${ox.toFixed(2)}px,${oy.toFixed(2)}px) scale(${breathe.toFixed(4)})`;
+    }
     if(glitchOn){
       // fatias novas a cada 2 quadros; só aí a personagem é redesenhada
       if(sliceTick++%2===0){
@@ -530,13 +533,63 @@
     }
   }
 
+  /* ================= Qualidade automática =================
+     Sem placa de vídeo (ou com ela bloqueada) o navegador desenha e monta a
+     tela usando o processador. No automático o wallpaper já começa no nível
+     mínimo nesse caso e, em qualquer PC, desce um nível sempre que o FPS fica
+     bem abaixo do pedido por alguns segundos seguidos. */
+  const SOFT=(()=>{
+    try{
+      const c=document.createElement('canvas'),g=c.getContext('webgl')||c.getContext('experimental-webgl');
+      if(!g)return true;
+      const d=g.getExtension('WEBGL_debug_renderer_info');
+      const r=String(g.getParameter(d?d.UNMASKED_RENDERER_WEBGL:g.RENDERER));
+      const l=g.getExtension('WEBGL_lose_context');if(l)l.loseContext();
+      return /swiftshader|llvmpipe|softpipe|software|basic render/i.test(r);
+    }catch(e){return true;}
+  })();
+  const URL_LITE=new URLSearchParams(location.search).get('leve');   // ?leve=1 força o mínimo, ?leve=0 ignora a detecção
+  let autoQ=URL_LITE!=null?(URL_LITE!=='0'?'lite':'medium'):SOFT?'lite':'medium';
+  const effQ=()=>CONFIG.quality==='auto'?autoQ:(QUALITY[CONFIG.quality]?CONFIG.quality:'medium');
+  const fpsNow=()=>Math.min(CONFIG.fps,QUALITY[effQ()].fps||60);
+
+  const watch={t0:0,n:0,prev:0,bad:0};
+  function watchFrame(now){
+    if(now-watch.prev>600)watch.t0=0;          // wallpaper pausado: recomeça a conta
+    watch.prev=now;
+    if(!watch.t0){watch.t0=now;watch.n=0;return;}
+    watch.n++;
+    if(now-watch.t0<3000)return;
+    const fps=watch.n*1000/(now-watch.t0);
+    window.__perf={fps:+fps.toFixed(1),quality:effQ()};
+    watch.t0=now;watch.n=0;
+    if(fps>=fpsNow()*.8){watch.bad=0;return;}
+    if(++watch.bad<2||CONFIG.quality!=='auto'||autoQ==='lite')return;
+    watch.bad=0;
+    autoQ=TIERS[TIERS.indexOf(autoQ)+1];
+    setQuality('auto');resize();
+  }
+
+  // a granulação pula para um lugar novo a cada ~90 ms
+  const GRAIN_POS=[[0,0],[-97,53],[61,-118],[-142,-31],[113,88],[-23,137]];
+  let grainStep=0,grainAt=0;
+
   /* ================= Loop (limitado por FPS) ================= */
   let last=0,prevT=0;
   function loop(now){
     requestAnimationFrame(loop);
-    if(now-last<1000/CONFIG.fps-1)return;
-    last=now;
+    // agenda o próximo quadro pela média: se o PC não chega ao dobro do limite,
+    // ele não pula um quadro sim, um não (o que cortaria o FPS pela metade)
+    const iv=1000/fpsNow();
+    if(now<last+iv-1)return;
+    last=Math.max(last+iv,now-iv);
     const t=now/1000, dt=Math.min(0.1,t-prevT||0);prevT=t;
+    watchFrame(now);
+    if(CONFIG.vhs&&now-grainAt>=88){
+      grainAt=now;grainStep=(grainStep+1)%GRAIN_POS.length;
+      const g=GRAIN_POS[grainStep];
+      grainEl.style.transform='translate('+g[0]+'px,'+g[1]+'px)';
+    }
     smx+=(mx-smx)*0.05;smy+=(my-smy)*0.05;
     updateGlitch(t);
     drawScene(t,dt);
@@ -544,9 +597,9 @@
   }
 
   function setQuality(q){
-    CONFIG.quality=QUALITY[q]?q:'medium';
-    document.body.classList.remove('q-high','q-medium','q-low');
-    document.body.classList.add('q-'+CONFIG.quality);
+    CONFIG.quality=q==='auto'||QUALITY[q]?q:'auto';
+    document.body.classList.remove('q-high','q-medium','q-low','q-lite');
+    document.body.classList.add('q-'+effQ());
   }
 
   /* ================= Wallpaper Engine ================= */
@@ -809,6 +862,9 @@
 
     /* ---------- Loop leve (4x por segundo + troca de linha precisa) ---------- */
     function tick(){
+      // escondida, a caixa não precisa ser redesenhada (a sombra dela custa caro
+      // sem placa de vídeo); ao aparecer, ela se atualiza em até 0,1 s
+      if(!el.box.classList.contains('show'))return;
       const p=position();
       el.pos.textContent=fmt(p);
       el.dur.textContent=S.duration?fmt(S.duration):'--:--';
@@ -910,14 +966,14 @@
     /* Lively chama livelyPropertyListener(nome, valor) para cada opção do
        LivelyProperties.json. Aqui o valor é convertido para o formato do
        Wallpaper Engine e reaproveita o mesmo código. */
-    const BOX=['bl','br','tr'], QUAL=['high','medium','low'];
+    const BOX=['bl','br','tr'], QUAL=['auto','high','medium','low','lite'];
     window.livelyPropertyListener=function(name,val){
       if(/^color[1-4]$/.test(name)&&typeof val==='string'){
         const n=parseInt(val.replace('#',''),16);
         val=[(n>>16)&255,(n>>8)&255,n&255].map(x=>(x/255).toFixed(4)).join(' ');
       }
       if(name==='boxposition'&&typeof val==='number')val=BOX[val]||'bl';
-      if(name==='quality'&&typeof val==='number')val=QUAL[val]||'medium';
+      if(name==='quality'&&typeof val==='number')val=QUAL[val]||'auto';
       window.wallpaperPropertyListener.applyUserProperties({[name]:{value:val}});
     };
   })();

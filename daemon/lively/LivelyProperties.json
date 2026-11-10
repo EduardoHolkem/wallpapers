@@ -17,6 +17,12 @@
     "type": "checkbox",
     "value": true
   },
+  "perf": {
+    "text": "Desempenho (Automático liga o modo leve em PC fraco)",
+    "type": "dropdown",
+    "value": 0,
+    "items": ["Automático", "Completo", "Leve (PC sem placa de vídeo)"]
+  },
   "fps": {
     "text": "FPS",
     "type": "slider",

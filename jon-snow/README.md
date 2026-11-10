@@ -3,7 +3,7 @@
 # Jon Snow
 
 <a href="https://eduardoholkem.github.io/wallpapers/live/jon-snow/"><img src="https://img.shields.io/badge/ver%20ao%20vivo-508cc8?style=for-the-badge&logo=googlechrome&logoColor=white"/></a>
-<a href="https://github.com/EduardoHolkem/wallpapers/releases/tag/jon-snow-v1.0.1"><img src="https://img.shields.io/badge/baixar-2b4a6b?style=for-the-badge&logo=github&logoColor=white"/></a>
+<a href="https://github.com/EduardoHolkem/wallpapers/releases/tag/jon-snow-v1.1.0"><img src="https://img.shields.io/badge/baixar-2b4a6b?style=for-the-badge&logo=github&logoColor=white"/></a>
 <img src="https://img.shields.io/badge/Wallpaper%20Engine-1c2733?style=for-the-badge&logo=steam&logoColor=white"/>
 <img src="https://img.shields.io/badge/Lively%20Wallpaper-1c2733?style=for-the-badge&logo=windows&logoColor=white"/>
 
@@ -34,12 +34,12 @@ O código foi revisado para ficar no mesmo padrão do [Lilacs](../lilacs), mais 
 | **Brilho azulado** | uma luz fria atrás da personagem que cresce e diminui devagar |
 | **Respiração** | a imagem aumenta e diminui bem de leve, num ciclo de seis segundos |
 | **Relógio** | hora e data em português, no canto superior esquerdo, que acompanham o tamanho da tela |
-| **Leve** | flocos desenhados a partir de uma imagem pronta, canvas em meia resolução e FPS limitado |
+| **Leve** | flocos desenhados a partir de uma imagem pronta, todas as animações no mesmo ritmo do FPS escolhido e um modo leve que liga sozinho em PC sem placa de vídeo |
 | **Qualquer tela** | flocos e relógio acompanham o tamanho da tela, então fica igual num monitor grande, num notebook ou num Steam Deck |
 
 ## Instalação
 
-Baixe o arquivo da sua plataforma na [release do Jon Snow](https://github.com/EduardoHolkem/wallpapers/releases/tag/jon-snow-v1.0.1).
+Baixe o arquivo da sua plataforma na [release do Jon Snow](https://github.com/EduardoHolkem/wallpapers/releases/tag/jon-snow-v1.1.0).
 
 <details open>
 <summary><b>Wallpaper Engine</b></summary>
@@ -67,6 +67,7 @@ Baixe o arquivo da sua plataforma na [release do Jon Snow](https://github.com/Ed
 | Quantidade de neve | 100% | de 0 a 200% |
 | Brilho atrás da personagem | ligado | a luz azulada pulsando |
 | Mostrar relógio | ligado | hora e data no canto superior esquerdo |
+| Desempenho | automático | no automático, o modo leve liga sozinho quando o PC não tem placa de vídeo ou não sustenta o FPS. Ele deixa o brilho e a personagem parados e desenha os flocos sem esticar a imagem, o que pesa bem menos |
 | FPS | 30 | limite de quadros por segundo |
 
 ## Estrutura

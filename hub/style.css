@@ -295,6 +295,53 @@ iframe.layer{pointer-events:none}
 .btn.dl svg{width:15px;height:15px;flex:none}
 .btn.dl:hover{border-color:var(--acc);box-shadow:0 8px 24px -10px var(--acc)}
 
+/* botão "ver rodando" na prévia (modo leve) */
+.play{
+  position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:4;
+  display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+  font-family:var(--display);font-weight:500;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  padding:11px 16px;color:var(--text);
+  border:1px solid color-mix(in srgb,var(--acc) 60%,transparent);
+  background:rgba(4,10,34,.82);
+}
+.play svg{width:13px;height:13px;flex:none;color:var(--acc)}
+.play:hover{border-color:var(--acc);background:rgba(8,20,64,.92)}
+.play[hidden]{display:none}
+
+/* aviso de modo leve e botão no rodapé */
+/* no canto de cima, longe dos botões de download */
+.toast{
+  position:fixed;right:16px;top:16px;z-index:20;transform:translateY(-12px);opacity:0;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  width:max-content;max-width:min(440px,calc(100vw - 32px));padding:12px 14px 12px 18px;
+  border:1px solid var(--line-strong);background:rgba(4,10,34,.95);
+  font-size:13px;line-height:1.45;color:var(--ice);transition:opacity .4s,transform .4s var(--ease);
+}
+.toast.on{opacity:1;transform:none}
+.toast button,.fx-toggle{
+  font:inherit;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--sky);background:none;border:1px solid var(--line-strong);padding:7px 10px;cursor:pointer;
+}
+.toast button:hover,.fx-toggle:hover{color:#fff;border-color:var(--sky)}
+.fx-toggle{padding:4px 8px;font-size:10.5px}
+
+/* ---------- modo leve ----------
+   Para PC sem placa de vídeo: o fundo vira uma imagem parada (vinheta e
+   linhas já desenhadas nela), sem granulação, sem animações que não param
+   e sem sombras grandes que precisariam ser repintadas a cada quadro. */
+.lite .grain,.lite .vignette,.lite .frame .scan{display:none}
+.lite .kicker .dot,.lite .stage-bar .live i,.lite .cue i::after,
+.lite img.layer.on,.lite video.layer.on{animation:none}
+.lite .title span:last-child{filter:none}
+.lite .frame{box-shadow:0 0 0 1px rgba(0,0,0,.4);transition:none}
+.lite .item{transition:transform .3s var(--ease),border-color .3s,background .3s}
+.lite .item.on{box-shadow:none}
+.lite .card,.lite .card.in{transition:opacity .4s,transform .4s var(--ease),border-color .3s}
+.lite .card:hover,.lite .card:focus-visible,.lite .card.touched{box-shadow:none}
+.lite .card-media img{transition:opacity .4s}
+.lite .card:hover .card-media img,.lite .card.touched .card-media img{transform:none}
+.lite .btn:hover{box-shadow:none}
+
 /* ---------- telas menores ---------- */
 /* notebook pequeno ou tela baixa: a prévia encolhe para caber tudo na primeira tela */
 @media (max-height:760px) and (min-width:901px){

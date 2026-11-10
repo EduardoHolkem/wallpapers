@@ -23,6 +23,40 @@
       'Cada wallpaper que eu já criei, com prévia ao vivo. Toque para ver rodando e toque de novo para abrir.';
   }
 
+  /* ================= Modo leve =================
+     Sem placa de vídeo (ou com ela bloqueada) o navegador monta a tela usando
+     o processador, e as luzes animadas, a granulação e os wallpapers rodando
+     nas prévias travam tudo. No modo leve o fundo vira uma imagem parada, as
+     animações contínuas param e o wallpaper só roda na prévia quando a pessoa
+     pede. Liga sozinho quando não há placa de vídeo ou quando o site não passa
+     de 30 quadros por segundo, e dá para trocar no rodapé. */
+  const LITE_KEY = 'hub-leve';
+  function softGPU() {
+    try {
+      const c = document.createElement('canvas'), g = c.getContext('webgl') || c.getContext('experimental-webgl');
+      if (!g) return true;
+      const d = g.getExtension('WEBGL_debug_renderer_info');
+      const r = String(g.getParameter(d ? d.UNMASKED_RENDERER_WEBGL : g.RENDERER));
+      const l = g.getExtension('WEBGL_lose_context'); if (l) l.loseContext();
+      return /swiftshader|llvmpipe|softpipe|software|basic render/i.test(r);
+    } catch (e) { return true; }
+  }
+  const store = {
+    get() { try { return localStorage.getItem(LITE_KEY); } catch (e) { return null; } },
+    set(v) { try { localStorage.setItem(LITE_KEY, v); } catch (e) {} }
+  };
+  const urlLite = new URLSearchParams(location.search).get('leve');   // ?leve=1 força, ?leve=0 desliga
+  const saved = store.get();
+  const chosen = urlLite != null || saved != null;   // a pessoa já escolheu: nada de automático
+  const autoLite = !chosen && (softGPU() || matchMedia('(prefers-reduced-motion: reduce)').matches ||
+                               (navigator.hardwareConcurrency || 4) <= 2);
+  let lite = urlLite != null ? urlLite !== '0' : saved != null ? saved === '1' : autoLite;
+  document.documentElement.classList.toggle('lite', lite);
+  const liveUrl = w => w.live + (lite ? '?leve=1' : '');
+  const liteText = () => { document.querySelector('.cat-sub').textContent = 'Cada wallpaper que eu já criei. ' +
+    (noHover ? 'Toque para ver o resumo e toque de novo para abrir.' : 'Clique para abrir a página dele.'); };
+  if (lite) liteText();
+
   function tag(name, text, cls) { const e = document.createElement(name); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; }
   function linkTo(a, href) { a.href = href; a.target = '_blank'; a.rel = 'noopener'; }
 
@@ -111,16 +145,27 @@
       el = new Image(); el.src = w.poster; el.alt = 'Prévia do wallpaper ' + w.name;
     }
     addLayer(el);
-    if (w.live) {
-      liveTimer = setTimeout(() => {
-        const f = liveFrame(w.live, 'Wallpaper ' + w.name + ' rodando', f => {
-          if (featured[current] === w) addLayer(f); else f.remove();
-        });
-        f.className = 'layer';
-        media.append(f);
-      }, 900);
-    }
+    // no modo leve o wallpaper só roda quando a pessoa aperta "ver rodando"
+    playBtn.hidden = !(lite && w.live);
+    if (w.live && !lite) liveTimer = setTimeout(() => startLive(w), 900);
   }
+  function startLive(w) {
+    const f = liveFrame(liveUrl(w), 'Wallpaper ' + w.name + ' rodando', f => {
+      if (featured[current] === w) addLayer(f); else f.remove();
+    });
+    f.className = 'layer';
+    media.append(f);
+  }
+  const playBtn = tag('button', null, 'play');
+  playBtn.type = 'button'; playBtn.hidden = true;
+  playBtn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>ver rodando';
+  playBtn.addEventListener('click', () => {
+    const w = featured[current];
+    if (!w || !w.live) return;
+    playBtn.hidden = true;
+    startLive(w);
+  });
+  $('frame').append(playBtn);
 
   /* ---------- informações ---------- */
   function button(text, href, cls) {
@@ -190,10 +235,10 @@
     const box = a.querySelector('.card-media');
     const start = delay => {
       clearTimeout(cardTimer);
-      if (!w.live) return;
+      if (!w.live || lite) return;     // no modo leve o cartão fica só com a capa
       cardTimer = setTimeout(() => {
         stopCardLive();
-        const f = liveFrame(w.live, 'Wallpaper ' + w.name + ' rodando', f => f.classList.add('on'));
+        const f = liveFrame(liveUrl(w),'Wallpaper ' + w.name + ' rodando', f => f.classList.add('on'));
         box.insertBefore(f, box.querySelector('.card-about'));
         cardLive = f;
       }, delay);
@@ -285,21 +330,63 @@
   addEventListener('mousemove', e => { mx = e.clientX / innerWidth - .5; my = e.clientY / innerHeight - .5; });
 
   function size() {
+    if (lite) { clearTimeout(staticTimer); staticTimer = setTimeout(drawStatic, 120); return; }
     bg.width = Math.max(80, Math.round(innerWidth / 8));
     bg.height = Math.max(45, Math.round(innerHeight / 8));
   }
-  addEventListener('resize', size); size();
+  let staticTimer = 0;
+  addEventListener('resize', size);
 
-  let last = 0;
+  // Modo leve: as luzes são desenhadas uma vez só, já no tamanho da tela (sem
+  // esticar a cada quadro), junto com a vinheta e as linhas finas, que no modo
+  // completo são camadas à parte. O fundo inteiro vira uma camada parada.
+  const sm = document.createElement('canvas'), smx2 = sm.getContext('2d');
+  function drawStatic() {
+    const W = innerWidth, H = innerHeight;
+    sm.width = Math.max(80, Math.round(W / 8)); sm.height = Math.max(45, Math.round(H / 8));
+    paint(smx2, sm.width, sm.height, 40, 0, 0);
+    bg.width = W; bg.height = H;
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(sm, 0, 0, W, H);
+    // vinheta: elipse centrada em 50% 45%, igual à do CSS
+    const rx = W / 2 * Math.SQRT2, ry = H * .55 * Math.SQRT2;
+    ctx.save(); ctx.translate(W / 2, H * .45); ctx.scale(rx / ry, 1);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, ry);
+    g.addColorStop(.4, 'rgba(1,3,12,0)'); g.addColorStop(1, 'rgba(1,3,12,.7)');
+    ctx.fillStyle = g; ctx.fillRect(-W, -H, W * 2, H * 2);
+    ctx.restore();
+    ctx.fillStyle = 'rgba(0,0,0,.18)';
+    for (let y = 0; y < H; y += 3) ctx.fillRect(0, y, W, 1);
+  }
+
+  // Confere o FPS nos primeiros segundos. Se o site não passar de 30 quadros
+  // por segundo, o modo leve liga sozinho (só se a pessoa ainda não escolheu).
+  const probe = { from: 0, n: 0, done: chosen || lite };
+  let last = 0, prev = 0;
   function frame(now) {
+    if (lite) return;                        // modo leve: o loop para
     requestAnimationFrame(frame);
-    if (document.hidden || now - last < 1000 / 30) return;
-    const dt = Math.min(.1, (now - last) / 1000); last = now;
-    const t = now / 1000, w = bg.width, h = bg.height, m = Math.max(w, h);
+    if (!probe.done && !document.hidden) {
+      if (!probe.from) probe.from = now + 1500;
+      else if (now >= probe.from) {
+        probe.n++;
+        if (now - probe.from >= 4000) {
+          probe.done = true;
+          if (probe.n * 1000 / (now - probe.from) < 30) { enterLite(true); return; }
+        }
+      }
+    }
+    // 30 quadros por segundo pela média, sem pular um sim, um não em tela lenta
+    if (document.hidden || now < last + 1000 / 30 - 1) return;
+    const dt = Math.min(.1, (now - prev) / 1000 || 0); prev = now;
+    last = Math.max(last + 1000 / 30, now - 1000 / 30);
     smx += (mx - smx) * .04; smy += (my - smy) * .04;
     // ao rolar para o catálogo, as luzes sobem um pouco (parallax)
-    const sc = Math.min(1, scrollY / innerHeight) * .25;
+    paint(ctx, bg.width, bg.height, now / 1000, dt, Math.min(1, scrollY / innerHeight) * .25);
+  }
 
+  function paint(ctx, w, h, t, dt, sc) {
+    const m = Math.max(w, h);
     ctx.globalCompositeOperation = 'source-over';
     ctx.fillStyle = '#020615'; ctx.fillRect(0, 0, w, h);
     ctx.globalCompositeOperation = 'screen';
@@ -332,6 +419,44 @@
       g.addColorStop(0, `rgba(190,220,255,${a})`); g.addColorStop(1, 'rgba(190,220,255,0)');
       ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2);
     }
+    ctx.globalCompositeOperation = 'source-over';
   }
-  requestAnimationFrame(frame);
+  if (lite) drawStatic(); else { size(); requestAnimationFrame(frame); }
+
+  /* ---------- liga o modo leve com a página aberta ---------- */
+  function enterLite(auto) {
+    if (lite) return;
+    lite = true;
+    document.documentElement.classList.add('lite');
+    if (auto) store.set('1');
+    drawStatic();
+    // troca o wallpaper rodando na prévia pela capa e para o do catálogo
+    clearTimeout(liveTimer); clearTimeout(cardTimer); stopCardLive();
+    const w = featured[current]; current = -1;
+    const k = featured.indexOf(w); if (k >= 0) select(k);
+    fxText(); liteText();
+    toast('Liguei o modo leve para o site rodar liso neste computador.');
+  }
+
+  /* ---------- aviso e botão no rodapé ---------- */
+  function toast(msg) {
+    let seen = false; try { seen = sessionStorage.getItem('hub-leve-aviso'); sessionStorage.setItem('hub-leve-aviso', '1'); } catch (e) {}
+    if (seen) return;
+    const t = tag('div', null, 'toast');
+    t.setAttribute('role', 'status');
+    t.append(tag('span', msg));
+    const b = tag('button', 'Usar efeitos completos'); b.type = 'button';
+    b.addEventListener('click', () => { store.set('0'); location.reload(); });
+    t.append(b);
+    document.body.append(t);
+    requestAnimationFrame(() => t.classList.add('on'));
+    setTimeout(() => { t.classList.remove('on'); setTimeout(() => t.remove(), 600); }, 9000);
+  }
+  if (autoLite) toast('Seu computador está sem placa de vídeo ativa, então liguei o modo leve.');
+
+  const fx = tag('button', null, 'fx-toggle'); fx.type = 'button';
+  const fxText = () => { fx.textContent = lite ? 'efeitos: leves' : 'efeitos: completos'; fx.setAttribute('aria-pressed', String(lite)); };
+  fxText();
+  fx.addEventListener('click', () => { store.set(lite ? '0' : '1'); location.reload(); });
+  document.querySelector('.foot').append(fx);
 })();
