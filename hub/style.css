@@ -50,10 +50,12 @@ ol,ul{list-style:none}
 /* ---------- layout ---------- */
 main{position:relative;z-index:2}
 .app{
-  position:relative;height:100vh;min-height:620px;
+  /* ocupa a tela inteira, mas cresce se o conteúdo não couber (tela baixa) */
+  position:relative;min-height:max(560px,100vh);min-height:max(560px,100svh);
   display:grid;grid-template-columns:minmax(300px,34%) 1fr;
   gap:clamp(24px,4.5vw,90px);
   padding:clamp(28px,7vh,90px) clamp(24px,6.5vw,130px);
+  padding-bottom:max(clamp(28px,7vh,90px),88px);   /* espaço do aviso "catálogo" */
 }
 .side{display:flex;flex-direction:column;min-height:0}
 
@@ -190,14 +192,16 @@ main{position:relative;z-index:2}
   content:'';position:absolute;left:0;right:0;top:-1px;height:2px;z-index:3;
   background:var(--a);box-shadow:0 0 16px var(--a);transform:scaleX(0);transition:transform .5s var(--ease);
 }
-.card:hover,.card:focus-visible{
+/* .touched faz no toque (celular, tablet) o mesmo que o mouse em cima */
+.card:hover,.card:focus-visible,.card.touched{
   transform:translateY(-6px);border-color:color-mix(in srgb,var(--a) 55%,transparent);
   box-shadow:0 24px 60px -24px var(--a);outline:none;
 }
-.card:hover::before,.card:focus-visible::before{transform:scaleX(1)}
-.card:hover .card-media img{transform:scale(1.07)}
-.card:hover .card-media::after,.card:hover .card-about{opacity:1}
-.card:hover .card-about{transform:none}
+.card:hover::before,.card:focus-visible::before,.card.touched::before{transform:scaleX(1)}
+.card:hover .card-media img,.card.touched .card-media img{transform:scale(1.07)}
+.card:hover .card-media::after,.card:hover .card-about,
+.card.touched .card-media::after,.card.touched .card-about{opacity:1}
+.card:hover .card-about,.card.touched .card-about{transform:none}
 
 .card.locked{cursor:default;border-style:dashed;background:rgba(4,10,34,.4)}
 .card.locked .card-media{
@@ -284,14 +288,43 @@ iframe.layer{pointer-events:none}
 .btn.off{opacity:.45;pointer-events:none}
 
 /* ---------- telas menores ---------- */
+/* notebook pequeno ou tela baixa: a prévia encolhe para caber tudo na primeira tela */
+@media (max-height:760px) and (min-width:901px){
+  .app{padding-top:clamp(20px,5vh,48px);padding-bottom:84px}
+  .cue{bottom:14px}
+  .title{font-size:clamp(26px,2.6vw,52px)}
+  .lead{margin-top:12px;font-size:14px}
+  .list-wrap{margin-top:clamp(16px,3.5vh,34px)}
+  .item{padding:12px 18px}
+  .frame{max-height:48vh}
+  .info{margin-top:14px;gap:10px}
+  .info-about{font-size:14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .btn{padding:11px 16px}
+}
+/* tablet em pé e celular: tudo numa coluna, na ordem título, prévia, lista */
 @media (max-width:900px){
-  .app{height:auto;min-height:100vh;grid-template-columns:1fr;padding:32px 20px 90px}
-  .cat-head{grid-template-columns:1fr}
-  .catalog{padding:60px 20px}
-  .stage{order:-1}
+  .app{display:flex;flex-direction:column;gap:26px;height:auto;min-height:0;padding:32px 20px 24px}
+  .side{display:contents}
+  .brand{order:1}
+  .stage{order:2}
+  .list-wrap{order:3;margin-top:0}
+  .cue{display:none}
   .list{overflow:visible}
   .item.on{transform:translateX(6px)}
   .frame{max-height:none}
+  .cat-head{grid-template-columns:1fr;gap:14px;margin-bottom:24px}
+  .catalog{padding:56px 20px}
+}
+@media (max-width:480px){
+  .title{font-size:clamp(28px,9vw,40px)}
+  .lead,.info-about,.cat-sub{font-size:14px}
+  .item{padding:14px 16px;gap:14px}
+  .item .name{font-size:15px}
+  .stage-bar{font-size:10px;gap:10px;letter-spacing:.18em}
+  .actions{display:grid;grid-template-columns:1fr 1fr}
+  .actions .btn{text-align:center;padding:13px 10px}
+  .actions .btn.primary{grid-column:1 / -1}
+  .card-body{padding:14px}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}

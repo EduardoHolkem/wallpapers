@@ -8,6 +8,20 @@
   const LOCK_SVG = '<svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">' +
                    '<rect x="4" y="11" width="16" height="10" rx="1"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
 
+  // No toque (celular, tablet) não existe "passar o mouse". O primeiro toque
+  // mostra a prévia e o segundo abre a página. lastPointer guarda se a última
+  // interação foi toque, mouse ou teclado.
+  let lastPointer = 'mouse';
+  addEventListener('pointerdown', e => { lastPointer = e.pointerType || 'mouse'; }, true);
+  addEventListener('keydown', () => { lastPointer = 'keyboard'; }, true);
+  const isTouch = () => lastPointer === 'touch';
+  if (matchMedia('(hover: none)').matches) {
+    document.querySelector('.lead').textContent =
+      'Wallpapers animados para Wallpaper Engine e Lively. Toque em um deles para ver a prévia e toque de novo para abrir.';
+    document.querySelector('.cat-sub').textContent =
+      'Cada wallpaper que eu já criei, com prévia ao vivo. Toque para ver rodando e toque de novo para abrir.';
+  }
+
   function tag(name, text, cls) { const e = document.createElement(name); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; }
   function linkTo(a, href) { a.href = href; a.target = '_blank'; a.rel = 'noopener'; }
 
@@ -33,9 +47,19 @@
       a.setAttribute('aria-label', 'Espaço bloqueado');
       a.innerHTML = `<span class="num">${pad(i + 1)}</span><span class="name">bloqueado</span><span class="go">${LOCK_SVG}</span>`;
     }
-    a.addEventListener('mouseenter', () => select(i));
-    a.addEventListener('focus', () => select(i));
-    a.addEventListener('click', e => { if (!w || !w.repo) e.preventDefault(); });
+    a.addEventListener('mouseenter', () => { if (!isTouch()) select(i); });
+    a.addEventListener('focus', () => { if (!isTouch()) select(i); });
+    a.addEventListener('click', e => {
+      if (isTouch() && current !== i) {
+        // primeiro toque: mostra a prévia e rola até ela, se estiver fora da tela
+        e.preventDefault();
+        select(i);
+        const top = $('frame').getBoundingClientRect().top;
+        if (top < 0 || top > innerHeight * .6) $('frame').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      if (!w || !w.repo) e.preventDefault();
+    });
     li.append(a); list.append(li);
     return a;
   });
@@ -149,11 +173,10 @@
     a.querySelector('.card-about').textContent = w.about;
     a.querySelector('.card-name').textContent = w.name;
     a.querySelector('.card-tags').textContent = w.platforms.map(p => p === 'Wallpaper Engine' ? 'WE' : p).join(' / ');
-    if (!href) a.addEventListener('click', e => e.preventDefault());
-
-    // passando o mouse, o wallpaper roda dentro do cartão (um por vez)
+    // com o mouse em cima (ou no primeiro toque) o wallpaper roda dentro do
+    // cartão, um por vez
     const box = a.querySelector('.card-media');
-    a.addEventListener('mouseenter', () => {
+    const start = delay => {
       clearTimeout(cardTimer);
       if (!w.live) return;
       cardTimer = setTimeout(() => {
@@ -161,9 +184,20 @@
         const f = liveFrame(w.live, 'Wallpaper ' + w.name + ' rodando', f => f.classList.add('on'));
         box.insertBefore(f, box.querySelector('.card-about'));
         cardLive = f;
-      }, 650);
+      }, delay);
+    };
+    a.addEventListener('mouseenter', () => { if (!isTouch()) start(650); });
+    a.addEventListener('mouseleave', () => { if (!isTouch()) { clearTimeout(cardTimer); stopCardLive(); } });
+    a.addEventListener('click', e => {
+      if (isTouch() && !a.classList.contains('touched')) {
+        e.preventDefault();
+        grid.querySelectorAll('.card.touched').forEach(c => c.classList.remove('touched'));
+        a.classList.add('touched');
+        start(250);
+        return;
+      }
+      if (!href) e.preventDefault();
     });
-    a.addEventListener('mouseleave', () => { clearTimeout(cardTimer); stopCardLive(); });
     return a;
   }
   function stopCardLive() {
