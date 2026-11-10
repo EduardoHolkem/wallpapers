@@ -21,12 +21,22 @@ const mode = process.argv[2] || 'all';
 const rm = p => fs.rmSync(p, { recursive: true, force: true });
 const mkdir = p => fs.mkdirSync(p, { recursive: true });
 const copyDir = (from, to) => { mkdir(to); fs.cpSync(from, to, { recursive: true }); };
-const tar = process.platform === 'win32' ? 'C:\\Windows\\System32\\tar.exe' : 'zip';
-
+// No Windows os zips são feitos pelo próprio .NET (System.IO.Compression), o
+// mesmo formato que o Lively e o Explorer leem. O tar.exe do Windows grava os
+// arquivos com descritor de dados no fim, que alguns leitores estranham.
 function zip(out, cwd, items) {
   if (fs.existsSync(out)) fs.unlinkSync(out);
-  const args = process.platform === 'win32' ? ['-a', '-c', '-f', out, ...items] : ['-r', '-q', out, ...items];
-  execFileSync(tar, args, { cwd });
+  if (process.platform === 'win32') {
+    const q = s => "'" + s.replace(/'/g, "''") + "'";
+    const ps = 'Add-Type -AssemblyName System.IO.Compression,System.IO.Compression.FileSystem;' +
+      '$z=[IO.Compression.ZipFile]::Open(' + q(out) + ',"Create");' +
+      'foreach($i in @(' + items.map(i => q(path.join(cwd, i))).join(',') + ')){' +
+      ' if(Test-Path -PathType Container $i){$b=Split-Path $i -Parent;' +
+      '  Get-ChildItem $i -Recurse -File|%{[IO.Compression.ZipFileExtensions]::CreateEntryFromFile($z,$_.FullName,$_.FullName.Substring($b.Length+1).Replace([char]92,[char]47),"Optimal")|Out-Null}}' +
+      ' else{[IO.Compression.ZipFileExtensions]::CreateEntryFromFile($z,$i,(Split-Path $i -Leaf),"Optimal")|Out-Null}};' +
+      '$z.Dispose()';
+    execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', ps]);
+  } else execFileSync('zip', ['-r', '-q', out, ...items], { cwd });
   console.log('  zip', path.relative(root, out));
 }
 
