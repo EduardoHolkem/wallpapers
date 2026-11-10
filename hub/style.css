@@ -286,6 +286,14 @@ iframe.layer{pointer-events:none}
 .btn.primary{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
 .btn.primary:hover{background:var(--blue);border-color:var(--blue)}
 .btn.off{opacity:.45;pointer-events:none}
+/* download direto: um botão por plataforma, com a cor do wallpaper */
+.btn.dl{
+  display:inline-flex;align-items:center;gap:8px;
+  border-color:color-mix(in srgb,var(--acc) 55%,transparent);
+  background:color-mix(in srgb,var(--acc) 14%,rgba(8,20,64,.6));
+}
+.btn.dl svg{width:15px;height:15px;flex:none}
+.btn.dl:hover{border-color:var(--acc);box-shadow:0 8px 24px -10px var(--acc)}
 
 /* ---------- telas menores ---------- */
 /* notebook pequeno ou tela baixa: a prévia encolhe para caber tudo na primeira tela */
@@ -313,6 +321,7 @@ iframe.layer{pointer-events:none}
   .item.on{transform:translateX(6px)}
   .frame{max-height:none}
   .cat-head{grid-template-columns:1fr;gap:14px;margin-bottom:24px}
+  .btn{font-size:11px;padding:11px 15px}
   .catalog{padding:56px 20px}
 }
 @media (max-width:480px){
@@ -321,9 +330,11 @@ iframe.layer{pointer-events:none}
   .item{padding:14px 16px;gap:14px}
   .item .name{font-size:15px}
   .stage-bar{font-size:10px;gap:10px;letter-spacing:.18em}
-  .actions{display:grid;grid-template-columns:1fr 1fr}
-  .actions .btn{text-align:center;padding:13px 10px}
-  .actions .btn.primary{grid-column:1 / -1}
+  /* no celular os botões ficam compactos, lado a lado */
+  .actions{gap:7px}
+  .btn{font-size:9.5px;letter-spacing:.1em;padding:9px 11px}
+  .btn.dl{gap:6px}
+  .btn.dl svg{width:12px;height:12px}
   .card-body{padding:14px}
 }
 @media (prefers-reduced-motion:reduce){

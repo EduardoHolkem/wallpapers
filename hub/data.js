@@ -5,12 +5,16 @@
    video     (opcional) vídeo curto que entra no lugar da imagem
    live      wallpaper rodando de verdade, mostrado dentro da prévia
    repo      página do wallpaper dentro do repositório wallpapers
-   download  release com os arquivos para baixar
+   downloads zips da release, um botão por plataforma (baixa direto)
    accent    cor de destaque do wallpaper, usada nos detalhes da página */
 (function () {
   const REPO = 'https://github.com/EduardoHolkem/wallpapers';
   const page = id => `${REPO}/tree/main/${id}`;
-  const release = (id, v) => `${REPO}/releases/tag/${id}-v${v}`;
+  // os zips de cada release seguem o padrão <Nome>-WallpaperEngine.zip e <Nome>-Lively.zip
+  const zips = (id, v, file) => [
+    { label: 'Wallpaper Engine', url: `${REPO}/releases/download/${id}-v${v}/${file}-WallpaperEngine.zip` },
+    { label: 'Lively', url: `${REPO}/releases/download/${id}-v${v}/${file}-Lively.zip` }
+  ];
 
   window.WALLPAPERS = [
     {
@@ -24,7 +28,7 @@
       poster: 'assets/posters/lilacs.jpg',
       live: 'live/lilacs/',
       repo: page('lilacs'),
-      download: release('lilacs', '2.0.1')
+      downloads: zips('lilacs', '2.0.1', 'Lilacs')
     },
     {
       id: 'daemon',
@@ -37,7 +41,7 @@
       poster: 'assets/posters/daemon.jpg',
       live: 'live/daemon/',
       repo: page('daemon'),
-      download: release('daemon', '1.0.1')
+      downloads: zips('daemon', '1.0.1', 'Daemon')
     },
     {
       id: 'jon-snow',
@@ -50,7 +54,7 @@
       poster: 'assets/posters/jonsnow.jpg',
       live: 'live/jon-snow/',
       repo: page('jon-snow'),
-      download: release('jon-snow', '1.0.1')
+      downloads: zips('jon-snow', '1.0.1', 'JonSnow')
     }
   ];
 })();

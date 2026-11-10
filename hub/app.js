@@ -11,13 +11,14 @@
   // No toque (celular, tablet) não existe "passar o mouse". O primeiro toque
   // mostra a prévia e o segundo abre a página. lastPointer guarda se a última
   // interação foi toque, mouse ou teclado.
-  let lastPointer = 'mouse';
+  const noHover = matchMedia('(hover: none)').matches;
+  let lastPointer = noHover ? 'touch' : 'mouse';
   addEventListener('pointerdown', e => { lastPointer = e.pointerType || 'mouse'; }, true);
   addEventListener('keydown', () => { lastPointer = 'keyboard'; }, true);
-  const isTouch = () => lastPointer === 'touch';
-  if (matchMedia('(hover: none)').matches) {
+  const isTouch = () => lastPointer === 'touch' || (noHover && lastPointer !== 'keyboard');
+  if (noHover) {
     document.querySelector('.lead').textContent =
-      'Wallpapers animados para Wallpaper Engine e Lively. Toque em um deles para ver a prévia e toque de novo para abrir.';
+      'Wallpapers animados para Wallpaper Engine e Lively. Toque em um deles para ver a prévia.';
     document.querySelector('.cat-sub').textContent =
       'Cada wallpaper que eu já criei, com prévia ao vivo. Toque para ver rodando e toque de novo para abrir.';
   }
@@ -41,7 +42,8 @@
       if (w.repo) linkTo(a, w.repo); else a.href = '#';
       a.innerHTML = `<span class="num">${pad(i + 1)}</span><span class="name"></span><span class="go"></span>`;
       a.querySelector('.name').textContent = w.name;
-      a.querySelector('.go').textContent = w.repo ? 'github' : 'em breve';
+      // no toque o item só mostra a prévia, então o rótulo diz isso
+      a.querySelector('.go').textContent = noHover ? 'prévia' : (w.repo ? 'github' : 'em breve');
     } else {
       a.href = '#';
       a.setAttribute('aria-label', 'Espaço bloqueado');
@@ -50,8 +52,9 @@
     a.addEventListener('mouseenter', () => { if (!isTouch()) select(i); });
     a.addEventListener('focus', () => { if (!isTouch()) select(i); });
     a.addEventListener('click', e => {
-      if (isTouch() && current !== i) {
-        // primeiro toque: mostra a prévia e rola até ela, se estiver fora da tela
+      if (isTouch()) {
+        // no toque o destaque só troca a prévia (e rola até ela, se estiver fora
+        // da tela); a página do GitHub fica no botão "Ver no GitHub"
         e.preventDefault();
         select(i);
         const top = $('frame').getBoundingClientRect().top;
@@ -128,16 +131,28 @@
     if (href) linkTo(a, href);
     return a;
   }
+  // botão que baixa o zip direto da release, com uma setinha de download
+  const DL_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">' +
+                 '<path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>';
+  function downloadButton(d) {
+    const a = button(d.label, d.url, 'dl');
+    a.removeAttribute('target');
+    a.setAttribute('download', '');
+    a.setAttribute('aria-label', 'Baixar para ' + d.label);
+    a.insertAdjacentHTML('afterbegin', DL_SVG);
+    return a;
+  }
   function fillInfo(w) {
     const info = $('info');
     $('info-name').textContent = w ? w.name : 'Bloqueado';
     $('info-about').textContent = w ? w.about : 'Este espaço está reservado para o próximo wallpaper. Quando ele ficar pronto, aparece aqui.';
     $('info-platforms').replaceChildren(...(w ? w.platforms : ['em produção']).map(p => tag('li', p)));
     $('info-tech').replaceChildren(...(w ? w.tech : []).map(t => tag('li', t)));
+    const dls = w && w.downloads && w.downloads.length ? w.downloads : null;
     $('info-actions').replaceChildren(...(w ? [
       button('Ver no GitHub', w.repo, 'primary'),
       ...(w.live ? [button('Demo ao vivo', w.live)] : []),
-      button(w.download ? 'Baixar' : 'Em breve', w.download)
+      ...(dls ? dls.map(downloadButton) : [button('Em breve', '')])
     ] : [button('Em breve', '')]));
     info.classList.remove('swap'); void info.offsetWidth; info.classList.add('swap');
   }

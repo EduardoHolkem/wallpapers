@@ -71,6 +71,11 @@ function buildSite() {
       fs.writeFileSync(index, fs.readFileSync(index, 'utf8').replace('</body>', '  <script src="demo.js"></script>\n</body>'));
     }
   }
+  // versão nos links do CSS e do JS: o navegador do celular não fica preso
+  // numa cópia antiga guardada em cache depois de uma atualização
+  const stamp = Date.now().toString(36);
+  const index = path.join(site, 'index.html');
+  fs.writeFileSync(index, fs.readFileSync(index, 'utf8').replace(/(href|src)="(style.css|data.js|app.js)"/g, (m, a, f) => a + '="' + f + '?v=' + stamp + '"'));
   fs.writeFileSync(path.join(site, '.nojekyll'), '');
   console.log('site pronto em', path.relative(root, site) || '.');
 }
