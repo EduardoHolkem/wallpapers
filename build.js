@@ -71,6 +71,11 @@ function buildSite() {
   const site = path.join(root, 'site');
   rm(site);
   copyDir(path.join(root, 'hub'), site);
+  // imagens estáticas de cada wallpaper, baixadas pelo botão Imagem do hub
+  for (const w of WALLPAPERS) {
+    const img = path.join(root, w.id, 'imagem');
+    if (fs.existsSync(img)) copyDir(img, path.join(site, 'imagens'));
+  }
   // cada wallpaper roda de verdade em site/live/<id>/, usado na prévia do hub
   for (const w of WALLPAPERS) {
     const live = path.join(site, 'live', w.id);

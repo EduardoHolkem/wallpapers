@@ -80,6 +80,17 @@ Baixe o arquivo da sua plataforma na [release do Lilacs](https://github.com/Edua
 
 </details>
 
+<details open>
+<summary><b>Sem Wallpaper Engine nem Lively</b></summary>
+<br/>
+
+Baixe a imagem estática, sem relógio, sem a caixa da música e sem o glitch, e use como papel de parede comum no PC ou no celular.
+
+- [Imagem para PC (2560x1440)](https://eduardoholkem.github.io/wallpapers/imagens/Lilacs-PC.jpg)
+- [Imagem para celular (1080x2340)](https://eduardoholkem.github.io/wallpapers/imagens/Lilacs-Celular.jpg)
+
+</details>
+
 ## Música e letra
 
 O wallpaper lê a música pelo controle de mídia do Windows, então funciona com o **Spotify** de desktop, o **YouTube Music** no Chrome ou no Edge e qualquer outro player que apareça ali.
@@ -119,6 +130,7 @@ lilacs
 ├── src/                código do wallpaper (index.html e imagem)
 ├── wallpaper-engine/   project.json com as opções do Wallpaper Engine
 ├── lively/             LivelyInfo.json e LivelyProperties.json
+├── imagem/             imagem estática para PC e celular
 ├── assets/             banner e prévia
 └── demo.js             música de demonstração usada na prévia do hub
 ```

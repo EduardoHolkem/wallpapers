@@ -23,10 +23,11 @@ O [hub](https://eduardoholkem.github.io/wallpapers/) é a vitrine. Lá dá para 
 
 ## Como instalar
 
-Cada wallpaper tem a sua release, com dois arquivos.
+Cada wallpaper tem a sua release, com dois arquivos, e uma imagem estática.
 
 - **Wallpaper Engine.** Extraia a pasta do zip dentro de `wallpaper_engine/projects/myprojects` e abra o Wallpaper Engine.
 - **Lively Wallpaper.** Arraste o zip, sem extrair, para dentro da janela do Lively.
+- **Sem nenhum dos dois.** Baixe a imagem estática, para PC ou celular, pelo botão Imagem do hub ou pelo README do wallpaper, e use como papel de parede comum.
 
 O passo a passo completo fica no README de cada wallpaper.
 
@@ -40,6 +41,7 @@ wallpapers
 │   ├── wallpaper-engine/ project.json
 │   ├── lively/           LivelyInfo.json e LivelyProperties.json
 │   ├── assets/           prévia
+│   ├── imagem/           imagem estática para PC e celular
 │   └── README.md
 ├── daemon/
 ├── jon-snow/

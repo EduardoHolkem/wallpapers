@@ -6,6 +6,7 @@
    live      wallpaper rodando de verdade, mostrado dentro da prévia
    repo      página do wallpaper dentro do repositório wallpapers
    downloads zips da release, um botão por plataforma (baixa direto)
+   images    imagem estática para PC e celular, sem relógio nem player
    accent    cor de destaque do wallpaper, usada nos detalhes da página */
 (function () {
   const REPO = 'https://github.com/EduardoHolkem/wallpapers';
@@ -15,6 +16,9 @@
     { label: 'Wallpaper Engine', url: `${REPO}/releases/download/${id}-v${v}/${file}-WallpaperEngine.zip` },
     { label: 'Lively', url: `${REPO}/releases/download/${id}-v${v}/${file}-Lively.zip` }
   ];
+
+  // imagem estática de cada wallpaper (fica em <pasta>/imagem e vai para site/imagens)
+  const stills = file => ({ pc: `imagens/${file}-PC.jpg`, celular: `imagens/${file}-Celular.jpg` });
 
   window.WALLPAPERS = [
     {
@@ -28,7 +32,8 @@
       poster: 'assets/posters/lilacs.jpg',
       live: 'live/lilacs/',
       repo: page('lilacs'),
-      downloads: zips('lilacs', '2.1.0', 'Lilacs')
+      downloads: zips('lilacs', '2.1.0', 'Lilacs'),
+      images: stills('Lilacs')
     },
     {
       id: 'daemon',
@@ -41,7 +46,8 @@
       poster: 'assets/posters/daemon-hd.jpg',
       live: 'live/daemon/',
       repo: page('daemon'),
-      downloads: zips('daemon', '1.1.0', 'Daemon')
+      downloads: zips('daemon', '1.1.0', 'Daemon'),
+      images: stills('Daemon')
     },
     {
       id: 'jon-snow',
@@ -54,7 +60,8 @@
       poster: 'assets/posters/jonsnow-hd.jpg',
       live: 'live/jon-snow/',
       repo: page('jon-snow'),
-      downloads: zips('jon-snow', '1.1.0', 'JonSnow')
+      downloads: zips('jon-snow', '1.1.0', 'JonSnow'),
+      images: stills('JonSnow')
     }
   ];
 })();

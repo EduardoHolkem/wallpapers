@@ -186,6 +186,20 @@
     a.insertAdjacentHTML('afterbegin', DL_SVG);
     return a;
   }
+  // Imagem estática, para quem não usa Wallpaper Engine nem Lively. Baixa a
+  // versão do aparelho: celular em pé recebe a vertical, o resto a do PC.
+  const IMG_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">' +
+                  '<rect x="3.5" y="4.5" width="17" height="15"/><path d="M3.5 16l5-5 4 4 3-3 5 5"/><circle cx="15.5" cy="9" r="1.4"/></svg>';
+  function imageButton(w) {
+    const cel = matchMedia('(orientation: portrait) and (max-width: 900px)').matches;
+    const a = button(cel ? 'Imagem celular' : 'Imagem PC', cel ? w.images.celular : w.images.pc, 'dl');
+    a.removeAttribute('target');
+    a.setAttribute('download', '');
+    a.setAttribute('aria-label', 'Baixar a imagem estática para ' + (cel ? 'celular' : 'PC'));
+    a.title = 'Imagem parada, para quem não usa Wallpaper Engine nem Lively';
+    a.insertAdjacentHTML('afterbegin', IMG_SVG);
+    return a;
+  }
   function fillInfo(w) {
     const info = $('info');
     $('info-name').textContent = w ? w.name : 'Bloqueado';
@@ -196,7 +210,8 @@
     // nos destaques não tem botão para o repositório: ele fica no catálogo
     $('info-actions').replaceChildren(...(w ? [
       ...(w.live ? [button('Demo ao vivo', w.live)] : []),
-      ...(dls ? dls.map(downloadButton) : [button('Em breve', '')])
+      ...(dls ? dls.map(downloadButton) : [button('Em breve', '')]),
+      ...(w.images ? [imageButton(w)] : [])
     ] : [button('Em breve', '')]));
     info.classList.remove('swap'); void info.offsetWidth; info.classList.add('swap');
   }
@@ -361,23 +376,10 @@
     for (let y = 0; y < H; y += 3) ctx.fillRect(0, y, W, 1);
   }
 
-  // No modo avançado, confere o FPS nos primeiros segundos. Se o site não
-  // passar de 30 quadros por segundo, sugere voltar ao modo leve.
-  let probe = { from: 0, n: 0, done: lite };
   let last = 0, prev = 0;
   function frame(now) {
     if (lite) return;                        // modo leve: o loop para
     requestAnimationFrame(frame);
-    if (!probe.done && !document.hidden) {
-      if (!probe.from) probe.from = now + 1500;
-      else if (now >= probe.from) {
-        probe.n++;
-        if (now - probe.from >= 4000) {
-          probe.done = true;
-          if (probe.n * 1000 / (now - probe.from) < 30) toast('O modo avançado está pesado neste computador. No leve o site fica bem mais liso.', 'Voltar ao modo leve', () => setMode(false));
-        }
-      }
-    }
     // 30 quadros por segundo pela média, sem pular um sim, um não em tela lenta
     if (document.hidden || now < last + 1000 / 30 - 1) return;
     const dt = Math.min(.1, (now - prev) / 1000 || 0); prev = now;
@@ -433,29 +435,13 @@
     document.documentElement.classList.toggle('lite', lite);
     clearTimeout(liveTimer); clearTimeout(cardTimer); stopCardLive();
     if (lite) drawStatic();
-    else { last = prev = 0; probe = { from: 0, n: 0, done: false }; size(); requestAnimationFrame(frame); }
+    else { last = prev = 0; size(); requestAnimationFrame(frame); }
     // refaz a prévia: no leve volta a capa com o botão, no avançado o wallpaper roda sozinho
     const k = current; current = -1; select(k);
     modeText(); syncSwitch();
   }
 
-  /* ---------- aviso ---------- */
-  let toastEl = null;
-  function toast(msg, action, fn) {
-    if (toastEl) toastEl.remove();
-    const t = toastEl = tag('div', null, 'toast');
-    t.setAttribute('role', 'status');
-    t.append(tag('span', msg));
-    const b = tag('button', action); b.type = 'button';
-    b.addEventListener('click', () => { fn(); hide(); });
-    t.append(b);
-    document.body.append(t);
-    requestAnimationFrame(() => t.classList.add('on'));
-    const hide = () => { t.classList.remove('on'); setTimeout(() => t.remove(), 600); };
-    setTimeout(hide, 10000);
-  }
-
-  /* ---------- configurações (engrenagem no canto) ---------- */
+  /* ---------- configurações (engrenagem no topo da página) ---------- */
   const GEAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">' +
     '<circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>';
   const cfg = tag('div', null, 'cfg');

@@ -60,6 +60,17 @@ Baixe o arquivo da sua plataforma na [release do Jon Snow](https://github.com/Ed
 
 </details>
 
+<details open>
+<summary><b>Sem Wallpaper Engine nem Lively</b></summary>
+<br/>
+
+Baixe a imagem estática, sem o relógio, e use como papel de parede comum no PC ou no celular.
+
+- [Imagem para PC (2560x1440)](https://eduardoholkem.github.io/wallpapers/imagens/JonSnow-PC.jpg)
+- [Imagem para celular (1080x2340)](https://eduardoholkem.github.io/wallpapers/imagens/JonSnow-Celular.jpg)
+
+</details>
+
 ## Opções
 
 | Opção | Padrão | O que faz |
@@ -77,6 +88,7 @@ jon-snow
 ├── src/                código do wallpaper (index.html e imagem)
 ├── wallpaper-engine/   project.json com as opções do Wallpaper Engine
 ├── lively/             LivelyInfo.json e LivelyProperties.json
+├── imagem/             imagem estática para PC e celular
 └── assets/             prévia
 ```
 
