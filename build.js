@@ -91,8 +91,68 @@ function buildSite() {
   const stamp = Date.now().toString(36);
   const index = path.join(site, 'index.html');
   fs.writeFileSync(index, fs.readFileSync(index, 'utf8').replace(/(href|src)="(style.css|data.js|app.js)"/g, (m, a, f) => a + '="' + f + '?v=' + stamp + '"'));
+  protectSite(site);
   fs.writeFileSync(path.join(site, '.nojekyll'), '');
   console.log('site pronto em', path.relative(root, site) || '.');
+}
+
+/* ---------- compactação e segurança do site ----------
+   Só a versão publicada é compactada: o código no repositório continua
+   legível. Sem comentários e sem espaços, quem abre o F12 vê o site enxuto.
+   Cada página também ganha uma política de segurança (CSP), que diz ao
+   navegador de onde cada coisa pode vir. Um script injetado por fora, por
+   exemplo, é bloqueado, porque só rodam os scripts do próprio site e os
+   blocos internos cuja impressão digital (sha256) está na política. */
+function protectSite(site) {
+  let esbuild;
+  try { esbuild = require('esbuild'); }
+  catch (e) { console.warn('  esbuild não instalado (rode npm install): site publicado sem compactar'); return; }
+  const crypto = require('crypto');
+  const min = (code, loader) => esbuild.transformSync(code, { loader, minify: true, legalComments: 'none', target: 'es2020' }).code.trim();
+  const sha = s => "'sha256-" + crypto.createHash('sha256').update(s, 'utf8').digest('base64') + "'";
+  const walk = d => fs.readdirSync(d, { withFileTypes: true })
+    .flatMap(e => e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
+  let before = 0, after = 0;
+  for (const f of walk(site)) {
+    const ext = path.extname(f);
+    if (!['.js', '.css', '.html'].includes(ext)) continue;
+    const src = fs.readFileSync(f, 'utf8');
+    const out = ext === '.html' ? protectHtml(src, f) : min(src, ext.slice(1));
+    before += Buffer.byteLength(src); after += Buffer.byteLength(out);
+    fs.writeFileSync(f, out);
+  }
+  console.log('  compactado:', Math.round(before / 1024) + ' KB ->', Math.round(after / 1024) + ' KB');
+
+  function protectHtml(html, file) {
+    const blocks = [], scripts = [], styles = [];
+    // estilos e scripts internos ficam guardados enquanto o HTML é enxugado,
+    // para a impressão digital deles bater exatamente com o que vai na página
+    const keep = s => '@@BLOCO' + (blocks.push(s) - 1) + '@@';
+    html = html.replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/<style>([\s\S]*?)<\/style>/g, (m, css) => { const c = min(css, 'css'); styles.push(sha(c)); return keep('<style>' + c + '</style>'); })
+      .replace(/<script>([\s\S]*?)<\/script>/g, (m, js) => { const c = min(js, 'js'); scripts.push(sha(c)); return keep('<script>' + c + '</script>'); })
+      .replace(/>\s*\n\s*</g, '><')          // recuo entre tags
+      .replace(/\s*\n\s*/g, ' ')             // quebras de linha no meio do texto
+      .replace(/@@BLOCO(\d+)@@/g, (m, i) => blocks[i])
+      .trim();
+    const live = file.includes(path.sep + 'live' + path.sep);
+    const csp = [
+      "default-src 'self'",
+      ["script-src 'self'", ...scripts].join(' '),
+      ["style-src 'self' https://fonts.googleapis.com", ...styles].join(' '),
+      'font-src https://fonts.gstatic.com',
+      "img-src 'self' data: blob:",
+      "media-src 'self'",
+      "connect-src 'self'" + (live ? ' https://lrclib.net' : ''),   // letras do Lilacs
+      "frame-src 'self'",
+      "object-src 'none'",
+      "base-uri 'none'",
+      "form-action 'none'"
+    ].join('; ');
+    const meta = '<meta http-equiv="Content-Security-Policy" content="' + csp + '">' +
+                 '<meta name="referrer" content="strict-origin-when-cross-origin">';
+    return html.replace(/<meta charset="UTF-8">/i, m => m + meta);
+  }
 }
 
 if (mode === 'all' || mode === 'dist') buildDist();

@@ -1,0 +1,12 @@
+{
+  "name": "wallpapers",
+  "private": true,
+  "description": "Wallpapers animados para Wallpaper Engine e Lively, e o hub que mostra todos",
+  "scripts": {
+    "build": "node build.js",
+    "site": "node build.js site"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.0"
+  }
+}

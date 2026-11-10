@@ -25,6 +25,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Instalar o esbuild (compacta o site)
+        run: npm ci
       - name: Montar o site
         run: node build.js site
       - uses: actions/configure-pages@v5
