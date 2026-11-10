@@ -1,0 +1,194 @@
+{
+	"file" : "index.html",
+	"general" :
+	{
+		"properties" :
+		{
+			"schemecolor" :
+			{
+				"order" : 0,
+				"text" : "ui_browse_properties_scheme_color",
+				"type" : "color",
+				"value" : "0.6078431372549019 0.3607843137254902 1"
+			},
+			"color1" :
+			{
+				"order" : 1,
+				"text" : "Cor 1 (rosa)",
+				"type" : "color",
+				"value" : "1 0.24705882352941178 0.7058823529411765"
+			},
+			"color2" :
+			{
+				"order" : 2,
+				"text" : "Cor 2 (lilás)",
+				"type" : "color",
+				"value" : "0.6078431372549019 0.3607843137254902 1"
+			},
+			"color3" :
+			{
+				"order" : 3,
+				"text" : "Cor 3 (azul)",
+				"type" : "color",
+				"value" : "0.1803921568627451 0.4196078431372549 1"
+			},
+			"color4" :
+			{
+				"order" : 4,
+				"text" : "Cor 4 (ciano)",
+				"type" : "color",
+				"value" : "0.1843137254901961 0.9529411764705882 0.8784313725490196"
+			},
+			"quality" :
+			{
+				"order" : 5,
+				"text" : "Qualidade (use Leve em PC fraco)",
+				"type" : "combo",
+				"value" : "medium",
+				"options" :
+				[
+					{ "label" : "Alta", "value" : "high" },
+					{ "label" : "Equilibrada", "value" : "medium" },
+					{ "label" : "Leve", "value" : "low" }
+				]
+			},
+			"fps" :
+			{
+				"order" : 6,
+				"text" : "FPS",
+				"type" : "slider",
+				"min" : 15,
+				"max" : 60,
+				"value" : 30
+			},
+			"glitch" :
+			{
+				"order" : 7,
+				"text" : "Glitch na personagem",
+				"type" : "bool",
+				"value" : true
+			},
+			"fringe" :
+			{
+				"order" : 8,
+				"text" : "Contorno rosa e ciano na personagem",
+				"type" : "bool",
+				"value" : true
+			},
+			"ghosts" :
+			{
+				"order" : 9,
+				"text" : "Sombras coloridas (fantasmas)",
+				"type" : "bool",
+				"value" : true
+			},
+			"halo" :
+			{
+				"order" : 10,
+				"text" : "Brilho atrás da personagem",
+				"type" : "bool",
+				"value" : true
+			},
+			"beams" :
+			{
+				"order" : 11,
+				"text" : "Holofotes",
+				"type" : "bool",
+				"value" : true
+			},
+			"motes" :
+			{
+				"order" : 12,
+				"text" : "Partículas de luz",
+				"type" : "bool",
+				"value" : true
+			},
+			"vhs" :
+			{
+				"order" : 13,
+				"text" : "Pontilhado e linhas (efeito VHS)",
+				"type" : "bool",
+				"value" : true
+			},
+			"grain" :
+			{
+				"order" : 14,
+				"text" : "Intensidade do pontilhado",
+				"type" : "slider",
+				"min" : 0,
+				"max" : 100,
+				"value" : 25,
+				"condition" : "vhs.value == true"
+			},
+			"vignette" :
+			{
+				"order" : 15,
+				"text" : "Cantos escuros",
+				"type" : "bool",
+				"value" : true
+			},
+			"mouse" :
+			{
+				"order" : 16,
+				"text" : "Parallax com o mouse",
+				"type" : "bool",
+				"value" : true
+			},
+			"showclock" :
+			{
+				"order" : 17,
+				"text" : "Mostrar relógio",
+				"type" : "bool",
+				"value" : false
+			},
+			"showplayer" :
+			{
+				"order" : 18,
+				"text" : "Mostrar música tocando (Spotify / YouTube Music)",
+				"type" : "bool",
+				"value" : true
+			},
+			"showlyrics" :
+			{
+				"order" : 19,
+				"text" : "Mostrar letra sincronizada",
+				"type" : "bool",
+				"value" : true,
+				"condition" : "showplayer.value == true"
+			},
+			"boxposition" :
+			{
+				"order" : 20,
+				"text" : "Posição da caixa",
+				"type" : "combo",
+				"value" : "bl",
+				"condition" : "showplayer.value == true",
+				"options" :
+				[
+					{ "label" : "Inferior esquerdo", "value" : "bl" },
+					{ "label" : "Inferior direito", "value" : "br" },
+					{ "label" : "Superior direito", "value" : "tr" }
+				]
+			},
+			"lyricsoffset" :
+			{
+				"order" : 21,
+				"text" : "Ajuste da letra (segundos)",
+				"type" : "slider",
+				"min" : -5,
+				"max" : 5,
+				"fraction" : true,
+				"precision" : 1,
+				"step" : 0.1,
+				"value" : 0,
+				"condition" : "showlyrics.value == true"
+			}
+		}
+	},
+	"preview" : "preview.jpg",
+	"snapshotformat" : 1,
+	"snapshotoverlay" : "",
+	"title" : "Lilacs By: Eduardo Holkem",
+	"type" : "web",
+	"version" : 0
+}

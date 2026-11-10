@@ -1,0 +1,28 @@
+{
+  "amount": {
+    "text": "Quantidade de neve (%)",
+    "type": "slider",
+    "min": 0,
+    "max": 200,
+    "step": 1,
+    "value": 100
+  },
+  "glow": {
+    "text": "Brilho atrás da personagem",
+    "type": "checkbox",
+    "value": true
+  },
+  "showclock": {
+    "text": "Mostrar relógio",
+    "type": "checkbox",
+    "value": true
+  },
+  "fps": {
+    "text": "FPS",
+    "type": "slider",
+    "min": 15,
+    "max": 60,
+    "step": 1,
+    "value": 30
+  }
+}

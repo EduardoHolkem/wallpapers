@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wallpaper-Lilacs</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      width:100vw;height:100vh;overflow:hidden;
+      background:#0b0616;color:#fff;
+      font-family:"Segoe UI",Inter,Arial,sans-serif;
+    }
+    .wallpaper{position:relative;width:100%;height:100%;overflow:hidden}
+    /* 1u = 1px numa tela de 1280px de largura. Relógio e caixa da música
+       crescem e encolhem junto com a tela, inclusive numa prévia pequena. */
+    :root{--u:clamp(.3px,.078125vw,2px)}
+
+    /* Cena: fundo de 4 cores, feixes, fantasmas, halo, partículas e vinheta.
+       Tudo isso é borrado, então é desenhado numa resolução menor e ampliado. */
+    #scene{position:absolute;inset:0;width:100%;height:100%;z-index:1}
+
+    /* Personagem: desenhada uma vez só. Respiração e parallax ficam por conta
+       do transform, que a placa de vídeo faz sem repintar nada. */
+    #person-canvas{position:absolute;z-index:5;pointer-events:none;transform-origin:50% 100%;will-change:transform}
+
+    /* Granulação e scanlines na mesma textura, que só muda de lugar */
+    .grain{
+      position:absolute;inset:-240px;z-index:9;pointer-events:none;
+      background-size:240px 240px;will-change:transform;
+      animation:grain .54s steps(1) infinite;
+    }
+    @keyframes grain{
+      0%{transform:translate(0,0)}
+      16.6%{transform:translate(-97px,53px)}
+      33.3%{transform:translate(61px,-118px)}
+      50%{transform:translate(-142px,-31px)}
+      66.6%{transform:translate(113px,88px)}
+      83.3%{transform:translate(-23px,137px)}
+    }
+
+    /* Relógio discreto: sem brilho nem sombra, só hora e dia em lilás claro,
+       com um fio nas 4 cores do fundo do lado */
+    .clock{
+      position:absolute;top:calc(16*var(--u));left:calc(17*var(--u));z-index:12;
+      padding-left:calc(8*var(--u));border-left:1px solid transparent;
+      border-image:linear-gradient(180deg,#ff3fb4,#9b5cff,#2e6bff,#2ff3e0) 1;
+      color:#dcd0ff;opacity:.7;line-height:1;
+      font-weight:300;letter-spacing:.3em;text-transform:lowercase;
+    }
+    .clock .time{font-size:calc(11.4*var(--u))}
+    .clock .date{font-size:calc(6.7*var(--u));margin-top:calc(4.7*var(--u));opacity:.75;letter-spacing:.25em}
+    .hidden{display:none !important}
+
+    /* ===== Caixa "tocando agora" (Spotify / YouTube Music via Wallpaper Engine) ===== */
+    .player{
+      --accent:#9b5cff;
+      position:absolute;z-index:13;
+      width:calc(222*var(--u));height:calc(243*var(--u));
+      display:flex;flex-direction:column;
+      padding:calc(12*var(--u));border-radius:calc(14*var(--u));
+      background:linear-gradient(135deg,rgba(20,10,40,.8),rgba(10,5,25,.68));
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 0 0 1px rgba(0,0,0,.2),0 10px 40px rgba(0,0,0,.45),0 0 38px -8px var(--accent);
+      color:#fff;opacity:0;transform:translateY(14px);pointer-events:none;overflow:hidden;
+      transition:opacity .6s ease,transform .6s ease,box-shadow 1.2s ease,
+                 height .7s cubic-bezier(.3,.8,.25,1);
+    }
+    /* Sem letra (ou depois que a letra acaba) a caixa encolhe até ficar só
+       capa, música e banda. Ela cresce e encolhe a partir do canto preso. */
+    .player.compact{height:var(--compact-h,calc(92*var(--u)))}
+    .player .lyrics{transition:opacity .45s ease .2s}
+    .player.compact .lyrics{opacity:0;transition-delay:0s}
+    /* vidro fosco só na qualidade alta: ele refaz o desfoque a cada quadro */
+    .q-high .player{
+      background:linear-gradient(135deg,rgba(20,10,40,.55),rgba(10,5,25,.35));
+      backdrop-filter:blur(14px) saturate(1.3);-webkit-backdrop-filter:blur(14px) saturate(1.3);
+    }
+    .player.show{opacity:1;transform:none}
+    .player.pos-bl{left:calc(6*var(--u));bottom:calc(6*var(--u))}
+    .player.pos-br{right:calc(6*var(--u));bottom:calc(6*var(--u))}
+    .player.pos-tr{right:calc(6*var(--u));top:calc(6*var(--u))}
+    .player .head{display:flex;gap:calc(10*var(--u));align-items:center;flex:none}
+    .player .cover{
+      position:relative;overflow:hidden;isolation:isolate;
+      width:calc(52*var(--u));height:calc(52*var(--u));border-radius:calc(9*var(--u));flex:none;
+      background:linear-gradient(135deg,#ff3fb4,#9b5cff,#2e6bff,#2ff3e0);
+      box-shadow:0 0 18px -2px var(--accent);
+    }
+    /* a foto é maior que a moldura: as bordas (às vezes com linhas brancas) ficam escondidas */
+    .player .cover img{
+      position:absolute;left:50%;top:50%;width:112%;height:112%;
+      transform:translate(-50%,-50%);object-fit:cover;display:block;border:0;
+    }
+    .player .cover img:not([src]){display:none}
+    .player.paused .cover{filter:grayscale(.5) brightness(.8)}
+    .player .meta{min-width:0;flex:1}
+    .player .title{font-size:calc(13*var(--u));font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+      text-shadow:-1px 0 rgba(255,60,170,.6),1px 0 rgba(60,230,255,.6)}
+    .player .artist{font-size:calc(10.5*var(--u));opacity:.75;margin-top:calc(2*var(--u));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.5px}
+    .player .bar{margin-top:calc(10*var(--u));height:calc(3*var(--u));border-radius:3px;background:rgba(255,255,255,.14);overflow:hidden;flex:none}
+    .player .bar i{display:block;height:100%;width:0;border-radius:3px;
+      background:linear-gradient(90deg,#ff3fb4,#9b5cff,#2e6bff,#2ff3e0)}
+    .player .times{display:flex;justify-content:space-between;font-size:calc(8.5*var(--u));opacity:.55;margin-top:calc(3*var(--u));letter-spacing:1px;flex:none}
+    .player .state{position:absolute;top:calc(10*var(--u));right:calc(10*var(--u));width:calc(7*var(--u));height:calc(7*var(--u));border-radius:50%;background:#2ff3e0;box-shadow:0 0 8px #2ff3e0}
+    .player.paused .state{background:#888;box-shadow:none}
+
+    .lyrics{margin-top:calc(10*var(--u));position:relative;flex:1;min-height:0;overflow:hidden;
+      -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 12%,#000 80%,transparent 100%);
+              mask-image:linear-gradient(180deg,transparent 0,#000 12%,#000 80%,transparent 100%)}
+    /* lista com a letra inteira que rola sozinha, deixando a linha atual perto do topo */
+    .lyrics .scroll{position:absolute;left:0;right:0;top:0;padding-right:7%;
+      transition:transform .55s cubic-bezier(.25,.8,.25,1);will-change:transform}
+    .lyrics .line{font-size:calc(13.5*var(--u));line-height:1.3;font-weight:600;
+      margin:0 0 calc(6*var(--u));opacity:.22;transform-origin:0 50%;
+      transition:opacity .45s ease,transform .45s ease,text-shadow .45s ease}
+    .lyrics .line.n1{opacity:.55}
+    .lyrics .line.n2{opacity:.36}
+    .lyrics .line.past{opacity:.3}
+    .lyrics .line.cur{opacity:1;transform:scale(1.06);
+      text-shadow:-1px 0 rgba(255,60,170,.75),1px 0 rgba(60,230,255,.75),0 0 16px var(--accent)}
+    .lyrics .line.gap{letter-spacing:5px}
+    .lyrics .note{font-size:calc(10.5*var(--u));opacity:.5;letter-spacing:1px;position:absolute;top:50%;transform:translateY(-50%)}
+  </style>
+</head>
+<body>
+  <div class="wallpaper">
+    <canvas id="scene"></canvas>
+    <canvas id="person-canvas"></canvas>
+    <div class="grain" id="grain"></div>
+
+    <div class="clock hidden" id="clock">
+      <div class="time" id="clock-time">00:00</div>
+      <div class="date" id="clock-date"></div>
+    </div>
+
+    <div class="player pos-bl compact" id="player">
+      <div class="head">
+        <div class="cover"><img id="np-cover" alt=""></div>
+        <div class="meta">
+          <div class="title" id="np-title"></div>
+          <div class="artist" id="np-artist"></div>
+          <div class="bar"><i id="np-bar"></i></div>
+          <div class="times"><span id="np-pos">0:00</span><span id="np-dur">0:00</span></div>
+        </div>
+        <span class="state"></span>
+      </div>
+      <div class="lyrics" id="np-lyrics"></div>
+    </div>
+  </div>
+
+  <script>
+  /* ================= Configuração ================= */
+  const CONFIG = {
+    colors: ['#ff3fb4', '#9b5cff', '#2e6bff', '#2ff3e0'], // rosa, lilás, azul, ciano
+    fps: 30,
+    grain: 25,
+    glitch: true,
+    mouse: true,
+    quality: 'medium',
+    // cada efeito pode ser desligado nas configurações do wallpaper
+    beams: true,      // holofotes
+    ghosts: true,     // sombras coloridas (fantasmas espelhados)
+    halo: true,       // brilho RGB atrás da personagem
+    motes: true,      // partículas de luz
+    fringe: true,     // bordas rosa e ciano na personagem
+    vignette: true,   // cantos escuros
+    vhs: true         // pontilhado e scanlines
+  };
+  const FX_KEYS = ['beams','ghosts','halo','motes','fringe','vignette','vhs'];
+  // scale = resolução da cena em relação à tela; motes = partículas de luz
+  const QUALITY = {
+    high:   { scale: .75, motes: 55 },
+    medium: { scale: .5,  motes: 45 },
+    low:    { scale: .34, motes: 30 }
+  };
+  // Área ocupada pela personagem dentro do PNG (500x500)
+  const IMG_SIZE = 500;
+  const FIG = { x0: 85, x1: 412, y0: 82, y1: 500 };
+
+  /* ================= Relógio ================= */
+  const clockTime=document.getElementById('clock-time'), clockDate=document.getElementById('clock-date');
+  const dateFmt=new Intl.DateTimeFormat('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+  let clockMin=-1;
+  function updateClock(){
+    const now=new Date(), m=now.getHours()*60+now.getMinutes();
+    if(m===clockMin)return;   // só mexe na tela quando o minuto vira
+    clockMin=m;
+    clockTime.textContent=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+    clockDate.textContent=dateFmt.format(now).replace('-feira','');
+  }
+  setInterval(updateClock,1000);updateClock();
+
+  /* ================= Utilidades ================= */
+  const rand=(a,b)=>a+Math.random()*(b-a);
+  function hexToRgb(h){
+    h=h.replace('#','');
+    if(h.length===3)h=h.split('').map(c=>c+c).join('');
+    const n=parseInt(h,16);return [(n>>16)&255,(n>>8)&255,n&255];
+  }
+  const rgba=(hex,a)=>{const [r,g,b]=hexToRgb(hex);return `rgba(${r},${g},${b},${a})`;};
+  function weColorToHex(v){
+    const p=v.split(' ').map(x=>Math.round(Math.max(0,Math.min(1,parseFloat(x)))*255));
+    return '#'+p.map(x=>x.toString(16).padStart(2,'0')).join('');
+  }
+  // mesma conta do filtro CSS saturate(), feita uma vez na cor em vez de na tela toda
+  function saturate(hex,s){
+    const [r,g,b]=hexToRgb(hex);
+    const m=[
+      .213+.787*s,.715-.715*s,.072-.072*s,
+      .213-.213*s,.715+.285*s,.072-.072*s,
+      .213-.213*s,.715-.715*s,.072+.928*s
+    ];
+    const c=i=>Math.round(Math.max(0,Math.min(255,m[i]*r+m[i+1]*g+m[i+2]*b)));
+    return '#'+[c(0),c(3),c(6)].map(x=>x.toString(16).padStart(2,'0')).join('');
+  }
+  function makeCanvas(w,h){const c=document.createElement('canvas');c.width=Math.max(1,Math.ceil(w));c.height=Math.max(1,Math.ceil(h));return c;}
+
+  /* ================= Elementos ================= */
+  const scene=document.getElementById('scene'), sc=scene.getContext('2d');
+  const pCanvas=document.getElementById('person-canvas'), pc=pCanvas.getContext('2d');
+  const bgc=makeCanvas(64,36), bg=bgc.getContext('2d');   // fundo em 1/6 da tela
+  const img=new Image();
+  img.src='Lilacs.png';
+
+  let VW=0,VH=0,Q=.5;            // tela em px CSS e escala da cena
+  let W=0,H=0,S=0,PX=0,PY=0;     // na cena: tamanho, PNG desenhado e seu canto superior esquerdo
+  let SC=0,PXc=0,PYc=0,PAD=0,D=1; // personagem em px CSS, margem lateral e densidade de pixels
+  let ghosts=[], halo=[], fringe=[], sprites=[], beams=[], motes=[], vignette=null;
+  let bgColors=CONFIG.colors.slice();
+
+  /* Silhueta tingida (com ou sem desfoque), recortada pelo alfa da personagem */
+  function tinted(color,size,blur){
+    const pad=Math.ceil(blur*2.5);
+    const t=makeCanvas(size,size), tc=t.getContext('2d');
+    tc.imageSmoothingQuality='high';
+    tc.drawImage(img,0,0,size,size);
+    tc.globalCompositeOperation='source-in';
+    tc.fillStyle=color;tc.fillRect(0,0,size,size);
+    if(!blur)return {c:t,pad:0};
+    const o=makeCanvas(size+pad*2,size+pad*2), oc=o.getContext('2d');
+    oc.filter=`blur(${blur}px)`;
+    oc.drawImage(t,pad,pad);
+    // segunda passada mais leve para um núcleo mais luminoso
+    oc.filter=`blur(${blur*0.45}px)`;oc.globalAlpha=.6;
+    oc.drawImage(t,pad,pad);
+    return {c:o,pad};
+  }
+
+  function glowSprite(color){
+    const s=64,c=makeCanvas(s,s),x=c.getContext('2d');
+    const g=x.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2);
+    g.addColorStop(0,'rgba(255,255,255,1)');
+    g.addColorStop(.22,rgba(color,.9));
+    g.addColorStop(1,rgba(color,0));
+    x.fillStyle=g;x.fillRect(0,0,s,s);return c;
+  }
+
+  /* Feixe de luz vindo do topo, já desfocado, na resolução do fundo */
+  function beamSprite(color){
+    const w=bgc.width*0.34, h=bgc.height*1.4, blur=3, pad=blur*3;
+    const t=makeCanvas(w,h), tx=t.getContext('2d');
+    const g=tx.createLinearGradient(0,0,0,h);
+    g.addColorStop(0,rgba(color,.9));g.addColorStop(.75,rgba(color,0));
+    tx.fillStyle=g;
+    tx.beginPath();tx.moveTo(w*.42,0);tx.lineTo(w*.58,0);tx.lineTo(w,h);tx.lineTo(0,h);tx.closePath();tx.fill();
+    const c=makeCanvas(w+pad*2,h+pad*2), x=c.getContext('2d');
+    x.filter=`blur(${blur}px)`;x.drawImage(t,pad,pad);
+    return {c,w,pad};
+  }
+
+  /* Vinheta no tamanho da cena: um círculo esticado vira a elipse da tela */
+  function vignetteSprite(){
+    const s=128,c=makeCanvas(W,H),x=c.getContext('2d');
+    x.scale(W/s,H/s);
+    const g=x.createRadialGradient(s/2,s/2,0,s/2,s/2,s/2*Math.SQRT2);
+    g.addColorStop(.45,'rgba(5,0,15,0)');
+    g.addColorStop(1,'rgba(5,0,15,.55)');
+    x.fillStyle=g;x.fillRect(0,0,s,s);return c;
+  }
+
+  /* Monta tudo que depende do tamanho da tela ou das cores */
+  function build(){
+    if(!img.complete||!img.naturalWidth)return;
+    const C=CONFIG.colors;
+    bgColors=C.map(c=>saturate(c,1.15));
+    SC=Math.round(Math.min(VH*0.94,VW*0.95));
+    PXc=Math.round(VW/2-SC/2);
+    PYc=Math.round(VH-SC+SC*0.01);
+    S=SC*Q;PX=PXc*Q;PY=PYc*Q;
+
+    // 4 fantasmas espelhados, um para cada cor do fundo
+    const gb=S*0.028;
+    ghosts=[
+      {color:C[0],side:-1,dist:0.50,scale:0.86,flip:false,phase:0.0,speed:0.21,depth:1.6},
+      {color:C[1],side:-1,dist:0.27,scale:0.95,flip:true, phase:1.7,speed:0.17,depth:1.0},
+      {color:C[2],side: 1,dist:0.27,scale:0.95,flip:true, phase:3.1,speed:0.19,depth:1.0},
+      {color:C[3],side: 1,dist:0.50,scale:0.86,flip:false,phase:4.4,speed:0.23,depth:1.6}
+    ].map(g=>{
+      const sz=Math.round(S*g.scale), t=tinted(g.color,sz,gb*g.scale);
+      // espelha uma vez aqui; desenhar invertido a cada quadro custa caro
+      if(g.flip){
+        const m=makeCanvas(t.c.width,t.c.height),mc=m.getContext('2d');
+        mc.translate(m.width,0);mc.scale(-1,1);mc.drawImage(t.c,0,0);t.c=m;
+      }
+      return Object.assign(g,{size:sz},t);
+    });
+
+    // Halo RGB (efeito de luz atrás da personagem)
+    const hb=S*0.014, hs=Math.round(S);
+    halo=[
+      Object.assign({off:-1},tinted('#ff2a6d',hs,hb)),
+      Object.assign({off: 0},tinted('#2affc6',hs,hb*1.4)),
+      Object.assign({off: 1},tinted('#3a5bff',hs,hb))
+    ];
+
+    sprites=C.map(glowSprite);
+    motes.forEach(m=>m.sprite=sprites[m.ci]);
+    beams=[beamSprite(C[0]),beamSprite(C[3])];
+    buildPerson();
+  }
+
+  function resize(){
+    VW=window.innerWidth;VH=window.innerHeight;
+    const q=QUALITY[CONFIG.quality]||QUALITY.medium;
+    Q=q.scale;
+    W=scene.width=Math.max(2,Math.round(VW*Q));
+    H=scene.height=Math.max(2,Math.round(VH*Q));
+    bgc.width=Math.max(64,Math.round(VW/6));
+    bgc.height=Math.max(36,Math.round(VH/6));
+    vignette=vignetteSprite();
+    motes=[];
+    for(let i=0;i<q.motes;i++)motes.push(newMote(true));
+    build();
+  }
+
+  /* ================= Partículas de luz ================= */
+  function newMote(anywhere){
+    const ci=Math.floor(Math.random()*4);
+    return {
+      x:Math.random()*W, y:anywhere?Math.random()*H:H+20*Q,
+      r:rand(4,13)*Q, vy:rand(6,22)*Q, sway:rand(8,30)*Q,
+      ph:Math.random()*Math.PI*2, tw:rand(.6,1.8), ci, sprite:sprites[ci]
+    };
+  }
+
+  /* ================= Granulação (VHS) + scanlines ================= */
+  const grainEl=document.getElementById('grain');
+  function makeGrain(amount){
+    // ruído claro e escuro em volta de zero, com uma linha escura a cada 3px
+    const s=240,c=makeCanvas(s,s),x=c.getContext('2d'),d=x.createImageData(s,s),p=d.data;
+    for(let y=0;y<s;y++){
+      const line=y%3===0;
+      for(let i=y*s*4,e=i+s*4;i<e;i+=4){
+        const v=Math.random()*2-1, a=Math.abs(v)*amount*0.32, col=v>0?255:0;
+        if(line){const oa=.05+a*.95;p[i]=p[i+1]=p[i+2]=col*a*.95/oa;p[i+3]=oa*255;}
+        else{p[i]=p[i+1]=p[i+2]=col;p[i+3]=a*255;}
+      }
+    }
+    x.putImageData(d,0,0);
+    grainEl.style.backgroundImage=`url(${c.toDataURL()})`;
+  }
+
+  /* ================= Mouse (parallax) ================= */
+  let mx=0,my=0,smx=0,smy=0;
+  window.addEventListener('mousemove',e=>{
+    if(!CONFIG.mouse)return;
+    mx=(e.clientX/window.innerWidth)*2-1;my=(e.clientY/window.innerHeight)*2-1;
+  });
+
+  /* ================= Fundo de 4 cores + feixes ================= */
+  function drawBackground(t){
+    const w=bgc.width,h=bgc.height,C=bgColors;
+    bg.globalCompositeOperation='source-over';
+    bg.fillStyle='#06030e';bg.fillRect(0,0,w,h);
+    bg.globalCompositeOperation='screen';
+    const R=Math.max(w,h)*0.5;
+    for(let i=0;i<4;i++){
+      // as 4 cores giram devagar em volta do centro, cada uma ocupando um "quadrante"
+      const a=t*0.035+i*Math.PI/2+Math.sin(t*0.11+i)*0.25;
+      const x=w*(0.5+0.46*Math.cos(a))+smx*w*0.02;
+      const y=h*(0.5+0.46*Math.sin(a))+smy*h*0.02;
+      const r=R*(0.9+0.12*Math.sin(t*0.3+i*1.3));
+      const g=bg.createRadialGradient(x,y,0,x,y,r);
+      g.addColorStop(0,rgba(C[i],.76));
+      g.addColorStop(.45,rgba(C[i],.28));
+      g.addColorStop(1,rgba(C[i],0));
+      bg.fillStyle=g;bg.fillRect(0,0,w,h);
+    }
+    // escurece o centro de baixo para destacar a personagem
+    bg.globalCompositeOperation='source-over';
+    const d=bg.createRadialGradient(w/2,h*0.85,0,w/2,h*0.85,h*0.7);
+    d.addColorStop(0,'rgba(6,3,14,.7)');d.addColorStop(1,'rgba(10,4,24,0)');
+    bg.fillStyle=d;bg.fillRect(0,0,w,h);
+
+    // feixes balançando a partir do topo
+    if(beams.length&&CONFIG.beams){
+      bg.globalCompositeOperation='screen';bg.globalAlpha=.42;
+      const sway=[-6-10*Math.cos(t*Math.PI*2/13), 5.5+10.5*Math.cos(t*Math.PI*2/17)];
+      beams.forEach((b,i)=>{
+        const px=i?w*0.92-b.w/2:w*0.08+b.w/2;
+        bg.save();bg.translate(px,-h*0.2);bg.rotate(sway[i]*Math.PI/180);
+        bg.drawImage(b.c,-b.w/2-b.pad,-b.pad);
+        bg.restore();
+      });
+      bg.globalAlpha=1;bg.globalCompositeOperation='source-over';
+    }
+  }
+
+  /* ================= Cena (fundo + fantasmas + halo + luzes + vinheta) ================= */
+  function drawScene(t,dt){
+    drawBackground(t);
+    sc.globalCompositeOperation='source-over';sc.globalAlpha=1;
+    sc.drawImage(bgc,0,0,W,H);
+
+    // posições arredondadas: com pixel inteiro a cópia é direta, sem reamostrar
+    const R=Math.round;
+    if(ghosts.length){
+      sc.globalCompositeOperation='screen';
+      const cx=W/2;
+
+      // Fantasmas espelhados
+      if(CONFIG.ghosts)for(const g of ghosts){
+        const drift=Math.sin(t*g.speed+g.phase)*S*0.025;
+        const bob=Math.sin(t*g.speed*1.3+g.phase*2)*S*0.008;
+        const x=cx+g.side*S*g.dist+drift-smx*S*0.03*g.depth;
+        const y=H-g.size+S*0.02+bob-smy*S*0.01*g.depth;
+        sc.globalAlpha=0.42+0.22*Math.sin(t*0.6+g.phase);
+        sc.drawImage(g.c,R(x-g.size/2-g.pad),R(y-g.pad));
+      }
+
+      // Halo RGB pulsante (a "luz" atrás dela)
+      const pulse=0.5+0.5*Math.sin(t*1.1)*Math.sin(t*0.37);
+      const spread=S*(0.010+0.012*pulse)+(glitchOn?S*0.02:0);
+      if(CONFIG.halo)for(const h of halo){
+        sc.globalAlpha=h.off===0?0.55+0.25*pulse:0.6;
+        const ox=h.off*spread-smx*S*0.008;
+        const oy=h.off===0?-S*0.006:0;
+        sc.drawImage(h.c,R(PX-h.pad+ox),R(PY-h.pad+oy));
+      }
+
+      // Partículas de luz subindo
+      if(CONFIG.motes)for(const m of motes){
+        m.y-=m.vy*dt;
+        if(m.y<-30*Q)Object.assign(m,newMote(false));
+        const x=m.x+Math.sin(t*0.5+m.ph)*m.sway-smx*20*Q;
+        const a=0.25+0.55*(0.5+0.5*Math.sin(t*m.tw+m.ph));
+        sc.globalAlpha=a*Math.min(1,m.y/(H*0.25));
+        const r=m.r*(0.8+0.3*Math.sin(t*m.tw*1.7+m.ph));
+        sc.drawImage(m.sprite,x-r,m.y-r,r*2,r*2);
+      }
+    }
+
+    sc.globalCompositeOperation='source-over';sc.globalAlpha=1;
+    if(vignette&&CONFIG.vignette)sc.drawImage(vignette,0,0);
+  }
+
+  /* ================= Personagem + glitch ================= */
+  let glitchOn=false,glitchEnd=0,nextGlitch=rand(6,12),slices=[],sliceTick=0,painted=null,personFull=null;
+
+  function buildPerson(){
+    D=Math.min(window.devicePixelRatio||1,2);
+    PAD=Math.round(SC*0.05);
+    const cw=SC+PAD*2, sd=Math.round(SC*D);
+    pCanvas.width=Math.round(cw*D);pCanvas.height=sd;
+    Object.assign(pCanvas.style,{width:cw+'px',height:SC+'px',left:(PXc-PAD)+'px',top:PYc+'px'});
+    fringe=[tinted('#ff2a8a',sd,0),tinted('#22e6ff',sd,0)];
+    // personagem já no tamanho final: o glitch só copia fatias, sem redimensionar
+    personFull=makeCanvas(sd,sd);
+    const fc=personFull.getContext('2d');
+    fc.imageSmoothingQuality='high';fc.drawImage(img,0,0,sd,sd);
+    paintPerson(false);
+  }
+
+  // Aberração cromática (cópias rosa e ciano deslocadas) + personagem, inteira ou fatiada
+  function paintPerson(glitch){
+    const sd=pCanvas.height, pd=PAD*D;
+    pc.clearRect(0,0,pCanvas.width,pCanvas.height);
+    const ab=Math.round(sd*0.0042+(glitch?sd*0.012:0));
+    if(CONFIG.fringe){
+      pc.globalAlpha=.7;
+      pc.drawImage(fringe[0].c,pd-ab,0);
+      pc.drawImage(fringe[1].c,pd+ab,0);
+      pc.globalAlpha=1;
+    }
+    if(glitch){
+      const k=sd/IMG_SIZE, top=Math.round(FIG.y0*k);
+      pc.drawImage(personFull,0,0,sd,top,pd,0,sd,top);
+      for(const s of slices){
+        const y=Math.round(s.y*k), h=Math.min(Math.round((s.y+s.h)*k),sd)-y;
+        if(h>0)pc.drawImage(personFull,0,y,sd,h,pd+Math.round(s.dx*D),y,sd,h);
+      }
+    }else{
+      pc.drawImage(personFull,pd,0);
+    }
+    painted=glitch;
+  }
+
+  function updatePerson(t){
+    if(!fringe.length)return;
+    const breathe=1+0.008*Math.sin(t*(Math.PI*2/6));
+    const ox=smx*SC*0.006, oy=smy*SC*0.003;
+    pCanvas.style.transform=`translate(${ox.toFixed(2)}px,${oy.toFixed(2)}px) scale(${breathe.toFixed(4)})`;
+    if(glitchOn){
+      // fatias novas a cada 2 quadros; só aí a personagem é redesenhada
+      if(sliceTick++%2===0){
+        slices=[];let y=FIG.y0;
+        while(y<IMG_SIZE){const h=rand(6,40);slices.push({y,h,dx:Math.random()<.55?rand(-1,1)*SC*0.035:0});y+=h;}
+        paintPerson(true);
+      }
+    }else if(painted)paintPerson(false);
+  }
+
+  function updateGlitch(t){
+    if(!CONFIG.glitch){glitchOn=false;return;}
+    if(!glitchOn&&t>=nextGlitch){glitchOn=true;glitchEnd=t+rand(.12,.32);}
+    if(glitchOn&&t>=glitchEnd){
+      glitchOn=false;
+      // às vezes um glitch duplo
+      nextGlitch=Math.random()<.3?t+rand(.15,.4):t+rand(7,16);
+    }
+  }
+
+  /* ================= Loop (limitado por FPS) ================= */
+  let last=0,prevT=0;
+  function loop(now){
+    requestAnimationFrame(loop);
+    if(now-last<1000/CONFIG.fps-1)return;
+    last=now;
+    const t=now/1000, dt=Math.min(0.1,t-prevT||0);prevT=t;
+    smx+=(mx-smx)*0.05;smy+=(my-smy)*0.05;
+    updateGlitch(t);
+    drawScene(t,dt);
+    updatePerson(t);
+  }
+
+  function setQuality(q){
+    CONFIG.quality=QUALITY[q]?q:'medium';
+    document.body.classList.remove('q-high','q-medium','q-low');
+    document.body.classList.add('q-'+CONFIG.quality);
+  }
+
+  /* ================= Wallpaper Engine ================= */
+  window.wallpaperPropertyListener={
+    applyUserProperties(p){
+      let rebuild=false, sized=false;
+      ['color1','color2','color3','color4'].forEach((k,i)=>{
+        if(p[k]){CONFIG.colors[i]=weColorToHex(p[k].value);rebuild=true;}
+      });
+      if(p.showclock)document.getElementById('clock').classList.toggle('hidden',!p.showclock.value);
+      if(p.grain){CONFIG.grain=p.grain.value;makeGrain(CONFIG.grain/100);}
+      FX_KEYS.forEach(k=>{if(p[k])CONFIG[k]=!!p[k].value;});
+      if(p.vhs)grainEl.classList.toggle('hidden',!CONFIG.vhs);
+      if(p.fringe&&fringe.length)paintPerson(false);
+      if(p.glitch)CONFIG.glitch=p.glitch.value;
+      if(p.mouse){CONFIG.mouse=p.mouse.value;if(!CONFIG.mouse){mx=0;my=0;}}
+      if(p.fps)CONFIG.fps=Math.max(10,Math.min(60,p.fps.value));
+      if(p.quality){setQuality(p.quality.value);sized=true;}
+      if(sized)resize();else if(rebuild)build();
+      window.__pendingProps=Object.assign(window.__pendingProps||{},p);
+      if(window.applyPlayerProperties)window.applyPlayerProperties(p);
+    }
+  };
+
+  setQuality(CONFIG.quality);
+  makeGrain(CONFIG.grain/100);
+  window.addEventListener('resize',resize);
+  resize();
+  img.onload=build;
+  if(img.complete)build();
+  requestAnimationFrame(loop);
+  </script>
+
+  <!-- ===================================================================
+       Tocando agora + letra sincronizada
+       A música vem da integração de mídia do Wallpaper Engine (Spotify,
+       YouTube Music no navegador, ou qualquer app que apareça no controle
+       de mídia do Windows). A letra é buscada na hora no LRCLIB.
+       =================================================================== -->
+  <script>
+  (function(){
+    const P={
+      show:true,          // mostrar a caixa
+      lyrics:true,        // mostrar a letra
+      offset:0            // atraso/adiantamento da letra em segundos
+    };
+    const el={
+      box:document.getElementById('player'),
+      cover:document.getElementById('np-cover'),
+      title:document.getElementById('np-title'),
+      artist:document.getElementById('np-artist'),
+      bar:document.getElementById('np-bar'),
+      pos:document.getElementById('np-pos'),
+      dur:document.getElementById('np-dur'),
+      lyrics:document.getElementById('np-lyrics')
+    };
+
+    /* ---------- Estado da música ---------- */
+    const S={
+      enabled:true, title:'', artist:'', album:'', key:'',
+      playing:false, stopped:true,
+      basePos:0, baseTime:performance.now(), duration:0, gotTimeline:false,
+      lines:null, synced:false, instrumental:false, status:'idle', lineIdx:-2
+    };
+
+    function position(){
+      const p=S.playing?S.basePos+(performance.now()-S.baseTime)/1000:S.basePos;
+      return S.duration?Math.min(p,S.duration):p;
+    }
+    function anchor(pos){S.basePos=pos;S.baseTime=performance.now();}
+    const fmt=s=>{s=Math.max(0,Math.floor(s||0));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
+
+    /* ---------- Limpeza do título (YouTube costuma vir com lixo) ---------- */
+    function clean(title,artist){
+      let t=(title||'').trim(), a=(artist||'').trim();
+      a=a.replace(/\s*-\s*Topic$/i,'').replace(/VEVO$/i,'').replace(/\s*\(Official\)$/i,'').trim();
+      t=t.replace(/\s*[\(\[][^\)\]]*(official|video|audio|lyric|letra|visualizer|clipe|mv|hd|4k|remaster)[^\)\]]*[\)\]]/gi,'')
+         .replace(/\s*\|.*$/,'').trim();
+      // vídeo comum do YouTube: "Artista - Música"
+      const m=t.match(/^(.+?)\s+[-–—]\s+(.+)$/);
+      if(m && (!a || m[1].toLowerCase().includes(a.toLowerCase()) || a.toLowerCase().includes(m[1].toLowerCase()))){
+        a=m[1].trim(); t=m[2].trim();
+      }
+      return {title:t, artist:a};
+    }
+
+    /* ---------- LRC ---------- */
+    function parseLRC(text){
+      const out=[];
+      for(const raw of text.split(/\r?\n/)){
+        const tags=[...raw.matchAll(/\[(\d+):(\d+(?:[.:]\d+)?)\]/g)];
+        if(!tags.length)continue;
+        const words=raw.replace(/\[[^\]]*\]/g,'').replace(/<\d+:\d+(?:\.\d+)?>/g,'').trim();
+        for(const tg of tags)out.push({t:parseInt(tg[1],10)*60+parseFloat(tg[2].replace(':','.')),text:words});
+      }
+      return out.sort((a,b)=>a.t-b.t);
+    }
+    // letra sem tempo: espalha as linhas ao longo da música (aproximado)
+    function spreadPlain(text,duration){
+      const ls=text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+      const d=duration||ls.length*4, start=d*0.07, step=(d*0.9-start)/Math.max(1,ls.length);
+      return ls.map((s,i)=>({t:start+i*step,text:s}));
+    }
+
+    /* ---------- Busca no LRCLIB (com cache) ---------- */
+    const API='https://lrclib.net/api/';
+    const memCache={};
+    function cacheGet(k){
+      if(memCache[k])return memCache[k];
+      try{const v=localStorage.getItem('lrc:'+k);if(v)return memCache[k]=JSON.parse(v);}catch(e){}
+      return null;
+    }
+    function cachePut(k,v){memCache[k]=v;try{localStorage.setItem('lrc:'+k,JSON.stringify(v));}catch(e){}}
+
+    async function getJSON(url){
+      const r=await fetch(url);
+      if(r.status===404)return null;
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      return r.json();
+    }
+    function pick(list,duration){
+      if(!Array.isArray(list)||!list.length)return null;
+      const score=x=>(x.syncedLyrics?0:1000)+(duration&&x.duration?Math.abs(x.duration-duration):50);
+      return list.slice().sort((a,b)=>score(a)-score(b))[0];
+    }
+    async function findLyrics(title,artist,album,duration){
+      const q=s=>encodeURIComponent(s);
+      let best=null;
+      if(duration){
+        best=await getJSON(`${API}get?track_name=${q(title)}&artist_name=${q(artist)}&album_name=${q(album||'')}&duration=${Math.round(duration)}`);
+        if(best&&best.syncedLyrics)return best;
+      }
+      const s1=await getJSON(`${API}search?track_name=${q(title)}&artist_name=${q(artist)}`);
+      const p1=pick(s1,duration); if(p1&&p1.syncedLyrics)return p1;
+      const s2=await getJSON(`${API}search?q=${q(artist+' '+title)}`);
+      const p2=pick(s2,duration);
+      return [p2,p1,best].find(x=>x&&x.syncedLyrics)||[p2,p1,best].find(x=>x&&(x.plainLyrics||x.instrumental))||null;
+    }
+
+    let reqId=0, waitTimer=0;
+    function loadLyrics(){
+      const id=++reqId;
+      S.lines=null;S.synced=false;S.instrumental=false;S.lineIdx=-2;
+      if(!S.title){S.status='idle';renderLyrics(true);return;}
+      const key=(S.artist+'|'+S.title).toLowerCase();
+      const cached=cacheGet(key);
+      if(cached){applyLyrics(cached);return;}
+      S.status='loading';renderLyrics(true);
+      // espera um pouco pela duração (ajuda a achar a versão certa)
+      clearTimeout(waitTimer);
+      waitTimer=setTimeout(async()=>{
+        try{
+          const r=await findLyrics(S.title,S.artist,S.album,S.duration);
+          if(id!==reqId)return;
+          const data=r?{synced:r.syncedLyrics||'',plain:r.plainLyrics||'',instrumental:!!r.instrumental}:{none:true};
+          cachePut(key,data);applyLyrics(data);
+        }catch(e){
+          if(id!==reqId)return;
+          S.status='error';renderLyrics(true);
+          setTimeout(()=>{if(id===reqId)loadLyrics();},30000); // tenta de novo (sem internet, limite etc.)
+        }
+      },S.gotTimeline?150:900);
+    }
+    function applyLyrics(d){
+      if(d.instrumental){S.instrumental=true;S.status='instrumental';}
+      else if(d.synced){S.lines=parseLRC(d.synced);S.synced=true;S.status=S.lines.length?'ok':'none';}
+      else if(d.plain){S.lines=spreadPlain(d.plain,S.duration);S.status='ok';}
+      else S.status='none';
+      S.lineIdx=-2;renderLyrics(true);
+    }
+
+    /* ---------- Desenho da letra ---------- */
+    function lineAt(t){
+      const L=S.lines;if(!L||!L.length)return -1;
+      let lo=0,hi=L.length-1,ans=-1;
+      while(lo<=hi){const m=(lo+hi)>>1;if(L[m].t<=t){ans=m;lo=m+1;}else hi=m-1;}
+      return ans;
+    }
+    function div(cls,text){const d=document.createElement('div');d.className=cls;d.textContent=text;return d;}
+    let listEl=null, lineEls=[], builtFor=null;
+    function buildList(){
+      listEl=document.createElement('div');listEl.className='scroll';
+      lineEls=S.lines.map(l=>{
+        const gap=!l.text;
+        const d=div('line'+(gap?' gap':''),gap?'♪ ♪ ♪':l.text);
+        listEl.append(d);return d;
+      });
+      el.lyrics.replaceChildren(listEl);
+      builtFor=S.lines;
+    }
+    function renderLyrics(force){
+      const box=el.lyrics;
+      box.classList.toggle('hidden',!P.lyrics);
+      if(!P.lyrics)return;
+      if(S.status!=='ok'){
+        if(!force)return;
+        builtFor=null;
+        const msg={idle:'',loading:'procurando a letra…',none:'letra não encontrada',
+                   error:'sem conexão com o servidor de letras',instrumental:'♪  instrumental  ♪'}[S.status]||'';
+        box.replaceChildren(div('note',msg));
+        return;
+      }
+      if(builtFor!==S.lines){buildList();force=true;}
+      const t=position()+P.offset+(S.synced?0.15:0);
+      const i=lineAt(t);
+      if(i===S.lineIdx&&!force)return;
+      S.lineIdx=i;
+      // classes por distância da linha atual
+      const focus=Math.max(i,0);
+      lineEls.forEach((d,k)=>{
+        const dist=k-i;
+        d.className='line'+(S.lines[k].text?'':' gap')+
+          (dist===0?' cur':dist===1?' n1':dist===2?' n2':dist<0?' past':'');
+      });
+      // rola a lista deixando a linha atual a ~22% do topo da área. A altura usada
+      // é a da caixa aberta (157u), para a rolagem já estar certa enquanto ela cresce.
+      const target=lineEls[focus];
+      if(target){
+        const u=el.box.offsetWidth/222;
+        const y=target.offsetTop-(157*u-2)*0.22;
+        listEl.style.transform=`translateY(${-Math.max(0,y)}px)`;
+      }
+    }
+    // ao mudar o tamanho da tela, recalcula a rolagem
+    window.addEventListener('resize',()=>{S.lineIdx=-2;});
+
+    /* ---------- Visibilidade ---------- */
+    // A caixa só aparece com música tocando. Pausou, ela espera um pouco
+    // (para não piscar na troca de faixa) e some; parou de vez, some na hora.
+    const HIDE_DELAY=4000;
+    let hideTimer=0;
+    function updateVisibility(){
+      const active=P.show&&S.enabled&&!!S.title&&!S.stopped;
+      clearTimeout(hideTimer);
+      if(active&&S.playing)el.box.classList.add('show');
+      else if(active)hideTimer=setTimeout(()=>el.box.classList.remove('show'),HIDE_DELAY);
+      else el.box.classList.remove('show');
+      el.box.classList.toggle('paused',!S.playing);
+    }
+
+    /* ---------- Tamanho da caixa ---------- */
+    // A caixa só cresce enquanto existe letra para mostrar. Sem letra, com a
+    // letra desligada ou alguns segundos depois da última linha, ela encolhe.
+    const LYRICS_HOLD=5;
+    function lyricsActive(){
+      if(!P.lyrics||S.status!=='ok'||!S.lines||!S.lines.length)return false;
+      const last=S.lines[S.lines.length-1].t;
+      return position()+P.offset<=last+LYRICS_HOLD;
+    }
+    // altura compacta = topo (capa, nome, banda e barra) + as bordas internas,
+    // medida de verdade porque depende da fonte e da resolução
+    const head=el.box.querySelector('.head');
+    let compactH='';
+    function updateSize(){
+      const u=el.box.offsetWidth/222;
+      const ch=Math.ceil(head.offsetHeight+24*u+2)+'px';
+      if(ch!==compactH){compactH=ch;el.box.style.setProperty('--compact-h',ch);}
+      el.box.classList.toggle('compact',!lyricsActive());
+    }
+
+    /* ---------- Loop leve (4x por segundo + troca de linha precisa) ---------- */
+    function tick(){
+      const p=position();
+      el.pos.textContent=fmt(p);
+      el.dur.textContent=S.duration?fmt(S.duration):'--:--';
+      el.bar.style.width=S.duration?(p/S.duration*100).toFixed(2)+'%':'0%';
+      updateSize();
+      renderLyrics(false);
+    }
+    setInterval(tick,100);
+
+    /* ---------- Cores vindas do Wallpaper Engine ---------- */
+    function toCss(c){
+      if(!c)return null;
+      if(/^[\d.]+\s+[\d.]+\s+[\d.]+$/.test(c.trim())){
+        const v=c.trim().split(/\s+/).map(Number);const k=v.some(x=>x>1)?1:255;
+        return `rgb(${v.map(x=>Math.round(x*k)).join(',')})`;
+      }
+      return c;
+    }
+
+    /* ---------- Listeners da integração de mídia ---------- */
+    function onStatus(e){S.enabled=!!e.enabled;updateVisibility();}
+    function onProps(e){
+      const c=clean(e.title,e.artist||e.albumArtist);
+      const key=(c.artist+'|'+c.title).toLowerCase();
+      if(key===S.key)return;
+      S.key=key;S.title=c.title;S.artist=c.artist;S.album=e.albumTitle||'';
+      el.title.textContent=c.title;
+      el.artist.textContent=c.artist;
+      S.gotTimeline=false;S.duration=0;anchor(0); // sem timeline, conta a partir de agora
+      if(S.stopped&&c.title){S.stopped=false;}
+      updateVisibility();
+      loadLyrics();
+    }
+    function onThumb(e){
+      if(e.thumbnail){el.cover.src=e.thumbnail;}
+      else el.cover.removeAttribute('src');
+      const acc=toCss(e.primaryColor)||toCss(e.secondaryColor);
+      if(acc)el.box.style.setProperty('--accent',acc);
+    }
+    function onPlayback(e){
+      const MI=window.wallpaperMediaIntegration||{};
+      const PLAY=MI.PLAYBACK_PLAYING!==undefined?MI.PLAYBACK_PLAYING:1;
+      const STOP=MI.PLAYBACK_STOPPED!==undefined?MI.PLAYBACK_STOPPED:0;
+      const pos=position();
+      S.playing=e.state===PLAY;
+      S.stopped=e.state===STOP;
+      anchor(pos);
+      updateVisibility();
+    }
+    function onTimeline(e){
+      const first=!S.gotTimeline;
+      S.gotTimeline=true;
+      if(e.duration)S.duration=e.duration;
+      anchor(e.position||0);
+      if(first&&S.status==='loading')loadLyrics(); // agora com a duração exata
+      else if(first&&S.lines&&!S.synced){const d=cacheGet((S.artist+'|'+S.title).toLowerCase());if(d)applyLyrics(d);}
+      renderLyrics(true);
+    }
+
+    if(window.wallpaperRegisterMediaStatusListener){
+      window.wallpaperRegisterMediaStatusListener(onStatus);
+      window.wallpaperRegisterMediaPropertiesListener(onProps);
+      window.wallpaperRegisterMediaThumbnailListener(onThumb);
+      window.wallpaperRegisterMediaPlaybackListener(onPlayback);
+      window.wallpaperRegisterMediaTimelineListener(onTimeline);
+    }
+    // usado só para testar fora do Wallpaper Engine (e pela demo do GitHub Pages)
+    window.__media={onStatus,onProps,onThumb,onPlayback,onTimeline,state:S,
+      seed:(artist,title,data)=>cachePut((artist+'|'+title).toLowerCase(),data)};
+
+    /* ---------- Lively Wallpaper ----------
+       Precisa de "Arguments": "--system-nowplaying" no LivelyInfo.json.
+       O Lively manda um JSON (ou null quando nada toca). Ele não informa a
+       posição da música, então a letra conta a partir da troca de faixa. */
+    window.livelyCurrentTrack=function(data){
+      let o=null;
+      try{o=typeof data==='string'?JSON.parse(data):data;}catch(e){o=null;}
+      if(!o||!o.Title){onPlayback({state:0});onProps({title:'',artist:''});return;}
+      onProps({title:o.Title,artist:o.Artist||o.AlbumArtist||'',albumTitle:o.AlbumTitle||''});
+      if(o.Thumbnail){
+        onThumb({thumbnail:o.Thumbnail.startsWith('data:')?o.Thumbnail:'data:image/png;base64,'+o.Thumbnail});
+      }
+      if(!S.playing)onPlayback({state:1});
+    };
+
+    /* ---------- Propriedades do usuário ---------- */
+    window.applyPlayerProperties=function(p){
+      if(p.showplayer){P.show=p.showplayer.value;updateVisibility();}
+      if(p.showlyrics){P.lyrics=p.showlyrics.value;renderLyrics(true);}
+      if(p.lyricsoffset){P.offset=Number(p.lyricsoffset.value)||0;S.lineIdx=-2;}
+      if(p.boxposition){
+        el.box.classList.remove('pos-bl','pos-br','pos-tr');
+        el.box.classList.add('pos-'+p.boxposition.value);
+        updateVisibility();
+      }
+    };
+    if(window.__pendingProps)window.applyPlayerProperties(window.__pendingProps);
+
+    /* Lively chama livelyPropertyListener(nome, valor) para cada opção do
+       LivelyProperties.json. Aqui o valor é convertido para o formato do
+       Wallpaper Engine e reaproveita o mesmo código. */
+    const BOX=['bl','br','tr'], QUAL=['high','medium','low'];
+    window.livelyPropertyListener=function(name,val){
+      if(/^color[1-4]$/.test(name)&&typeof val==='string'){
+        const n=parseInt(val.replace('#',''),16);
+        val=[(n>>16)&255,(n>>8)&255,n&255].map(x=>(x/255).toFixed(4)).join(' ');
+      }
+      if(name==='boxposition'&&typeof val==='number')val=BOX[val]||'bl';
+      if(name==='quality'&&typeof val==='number')val=QUAL[val]||'medium';
+      window.wallpaperPropertyListener.applyUserProperties({[name]:{value:val}});
+    };
+  })();
+  </script>
+</body>
+</html>

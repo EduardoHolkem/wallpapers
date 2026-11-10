@@ -1,0 +1,16 @@
+{
+  "AppVersion": "2.0.6.0",
+  "Title": "Lilacs",
+  "Thumbnail": "thumbnail.jpg",
+  "Preview": "preview.jpg",
+  "Desc": "Wallpaper animado inspirado em Lilacs, de Pastel Ghost. Fundo de quatro cores, fantasmas espelhados, halo de luz RGB e a música tocando com letra sincronizada.",
+  "Author": "Eduardo Holkem",
+  "License": "MIT",
+  "Contact": "https://github.com/EduardoHolkem/wallpapers",
+  "Type": 1,
+  "FileName": "index.html",
+  "Arguments": "--system-nowplaying",
+  "IsAbsolutePath": false,
+  "Tags": ["pastel ghost", "lilacs", "neon", "vhs", "now playing", "lyrics"],
+  "Version": 1
+}

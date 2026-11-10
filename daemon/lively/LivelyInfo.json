@@ -1,0 +1,21 @@
+{
+  "AppVersion": "2.0.6.0",
+  "Title": "Daemon",
+  "Thumbnail": "thumbnail.jpg",
+  "Preview": "preview.jpg",
+  "Desc": "Daemon Targaryen sobre um fundo vermelho escuro, com brasas subindo e um brilho pulsando atrás dele.",
+  "Author": "Eduardo Holkem",
+  "License": "MIT",
+  "Contact": "https://github.com/EduardoHolkem/wallpapers",
+  "Type": 1,
+  "FileName": "index.html",
+  "Arguments": "",
+  "IsAbsolutePath": false,
+  "Tags": [
+    "house of the dragon",
+    "targaryen",
+    "embers",
+    "dark red"
+  ],
+  "Version": 1
+}
