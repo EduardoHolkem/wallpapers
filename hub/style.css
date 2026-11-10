@@ -120,6 +120,8 @@ main{position:relative;z-index:2}
 .item.on .num,.item.on .go{color:var(--text)}
 @keyframes sweep{0%{left:-40%;opacity:1}100%{left:120%;opacity:0}}
 .item:focus-visible{outline:1px solid var(--sky);outline-offset:3px}
+/* os destaques são botões: zera o estilo padrão do navegador */
+button.item{width:100%;font:inherit;color:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
 
 /* slot sem wallpaper: fica bloqueado até um novo entrar na lista */
 .item.locked{--a:#5d6f9c;border-style:dashed;background:rgba(6,14,44,.35);cursor:default}
@@ -283,8 +285,6 @@ iframe.layer{pointer-events:none}
   transition:background .25s,border-color .25s,transform .25s var(--ease),box-shadow .25s;
 }
 .btn:hover{transform:translateY(-2px);border-color:var(--sky);box-shadow:0 8px 24px -10px var(--blue)}
-.btn.primary{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
-.btn.primary:hover{background:var(--blue);border-color:var(--blue)}
 .btn.off{opacity:.45;pointer-events:none}
 /* download direto: um botão por plataforma, com a cor do wallpaper */
 .btn.dl{

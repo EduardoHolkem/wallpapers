@@ -33,38 +33,35 @@
 
   const list = $('list');
   $('count').textContent = pad(featured.filter(Boolean).length) + ' / ' + pad(SLOTS);
+  // Os destaques são botões, não links: servem só para trocar a prévia, no
+  // mouse e no toque. Abrir o repositório fica para o catálogo lá embaixo, e
+  // baixar fica nos botões de download do painel.
   const items = featured.map((w, i) => {
     const li = tag('li');
-    const a = tag('a', null, 'item' + (w ? '' : ' locked'));
-    a.style.setProperty('--i', i);
+    const b = tag('button', null, 'item' + (w ? '' : ' locked'));
+    b.type = 'button';
+    b.style.setProperty('--i', i);
     if (w) {
-      a.style.setProperty('--a', w.accent);
-      if (w.repo) linkTo(a, w.repo); else a.href = '#';
-      a.innerHTML = `<span class="num">${pad(i + 1)}</span><span class="name"></span><span class="go"></span>`;
-      a.querySelector('.name').textContent = w.name;
-      // no toque o item só mostra a prévia, então o rótulo diz isso
-      a.querySelector('.go').textContent = noHover ? 'prévia' : (w.repo ? 'github' : 'em breve');
+      b.style.setProperty('--a', w.accent);
+      b.innerHTML = `<span class="num">${pad(i + 1)}</span><span class="name"></span><span class="go">prévia</span>`;
+      b.querySelector('.name').textContent = w.name;
+      b.setAttribute('aria-label', 'Ver a prévia do ' + w.name);
     } else {
-      a.href = '#';
-      a.setAttribute('aria-label', 'Espaço bloqueado');
-      a.innerHTML = `<span class="num">${pad(i + 1)}</span><span class="name">bloqueado</span><span class="go">${LOCK_SVG}</span>`;
+      b.setAttribute('aria-label', 'Espaço bloqueado');
+      b.innerHTML = `<span class="num">${pad(i + 1)}</span><span class="name">bloqueado</span><span class="go">${LOCK_SVG}</span>`;
     }
-    a.addEventListener('mouseenter', () => { if (!isTouch()) select(i); });
-    a.addEventListener('focus', () => { if (!isTouch()) select(i); });
-    a.addEventListener('click', e => {
+    b.addEventListener('mouseenter', () => { if (!isTouch()) select(i); });
+    b.addEventListener('focus', () => { if (!isTouch()) select(i); });
+    b.addEventListener('click', () => {
+      select(i);
+      // no celular a prévia fica acima da lista: rola até ela se estiver fora da tela
       if (isTouch()) {
-        // no toque o destaque só troca a prévia (e rola até ela, se estiver fora
-        // da tela); a página do GitHub fica no botão "Ver no GitHub"
-        e.preventDefault();
-        select(i);
         const top = $('frame').getBoundingClientRect().top;
         if (top < 0 || top > innerHeight * .6) $('frame').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return;
       }
-      if (!w || !w.repo) e.preventDefault();
     });
-    li.append(a); list.append(li);
-    return a;
+    li.append(b); list.append(li);
+    return b;
   });
 
   // setas do teclado andam pelos destaques (só enquanto o topo está na tela)
@@ -149,8 +146,8 @@
     $('info-platforms').replaceChildren(...(w ? w.platforms : ['em produção']).map(p => tag('li', p)));
     $('info-tech').replaceChildren(...(w ? w.tech : []).map(t => tag('li', t)));
     const dls = w && w.downloads && w.downloads.length ? w.downloads : null;
+    // nos destaques não tem botão para o repositório: ele fica no catálogo
     $('info-actions').replaceChildren(...(w ? [
-      button('Ver no GitHub', w.repo, 'primary'),
       ...(w.live ? [button('Demo ao vivo', w.live)] : []),
       ...(dls ? dls.map(downloadButton) : [button('Em breve', '')])
     ] : [button('Em breve', '')]));
