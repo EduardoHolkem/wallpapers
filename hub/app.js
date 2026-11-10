@@ -34,11 +34,8 @@
     get() { try { return localStorage.getItem(MODE_KEY); } catch (e) { return null; } },
     set(v) { try { localStorage.setItem(MODE_KEY, v); } catch (e) {} }
   };
-  const params = new URLSearchParams(location.search);
-  const urlLite = params.get('leve');   // ?leve=0 abre no avançado
-  const tour = params.has('tour');      // modo apresentação, para gravar vídeo (veja runTour)
-  let lite = tour ? false : urlLite != null ? urlLite !== '0' : store.get() !== '1';
-  document.documentElement.classList.toggle('tour', tour);
+  const urlLite = new URLSearchParams(location.search).get('leve');   // ?leve=0 abre no avançado
+  let lite = urlLite != null ? urlLite !== '0' : store.get() !== '1';
   document.documentElement.classList.toggle('lite', lite);
   const liveUrl = w => w.live + (lite ? '?leve=1' : '');
   const catSub = document.querySelector('.cat-sub'), catSubFull = catSub.textContent;
@@ -366,7 +363,7 @@
 
   // No modo avançado, confere o FPS nos primeiros segundos. Se o site não
   // passar de 30 quadros por segundo, sugere voltar ao modo leve.
-  let probe = { from: 0, n: 0, done: lite || tour };
+  let probe = { from: 0, n: 0, done: lite };
   let last = 0, prev = 0;
   function frame(now) {
     if (lite) return;                        // modo leve: o loop para
@@ -445,7 +442,6 @@
   /* ---------- aviso ---------- */
   let toastEl = null;
   function toast(msg, action, fn) {
-    if (tour) return;
     if (toastEl) toastEl.remove();
     const t = toastEl = tag('div', null, 'toast');
     t.setAttribute('role', 'status');
@@ -486,40 +482,4 @@
   sw.addEventListener('click', () => setMode(lite));
   document.addEventListener('click', e => { if (!panel.hidden && !cfg.contains(e.target)) openPanel(false); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden) { openPanel(false); cfgBtn.focus(); } });
-
-  /* ---------- modo apresentação (?tour) ----------
-     Para gravar um vídeo do site: abra index.html?tour em tela cheia (F11) e
-     comece a gravar. O site se apresenta sozinho no modo avançado, sem cursor,
-     sem engrenagem e sem barra de rolagem: passa pelos destaques, desce até o
-     catálogo, mostra cada cartão rodando e volta ao topo. Dura cerca de 1 min. */
-  if (tour) runTour();
-  async function runTour() {
-    const wait = ms => new Promise(r => setTimeout(r, ms));
-    const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    const scrollToY = (y, ms) => new Promise(done => {
-      const y0 = scrollY, t0 = performance.now();
-      (function step(now) {
-        const k = Math.min(1, (now - t0) / ms);
-        scrollTo(0, y0 + (y - y0) * ease(k));
-        if (k < 1) requestAnimationFrame(step); else done();
-      })(t0);
-    });
-    document.documentElement.style.scrollBehavior = 'auto';
-    scrollTo(0, 0);
-    await wait(4500);                                   // título e o Lilacs rodando
-    for (let i = 1; i < SLOTS; i++) { select(i); await wait(featured[i] ? 7000 : 2500); }
-    select(0); await wait(3000);
-    await scrollToY(grid.getBoundingClientRect().top + scrollY - innerHeight * .3, 2600);
-    await wait(1200);
-    for (const c of grid.querySelectorAll('.card:not(.locked)')) {
-      c.classList.add('touched'); c.dispatchEvent(new MouseEvent('mouseenter'));
-      await wait(6000);
-      c.dispatchEvent(new MouseEvent('mouseleave')); c.classList.remove('touched');
-      await wait(500);
-    }
-    await wait(800);
-    await scrollToY(0, 2600);
-    await wait(2500);
-    document.documentElement.style.scrollBehavior = '';
-  }
 })();
