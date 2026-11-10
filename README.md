@@ -17,9 +17,9 @@ O [hub](https://eduardoholkem.github.io/wallpapers/) é a vitrine. Lá dá para 
 
 | | Wallpaper | Plataformas | Versão |
 |---|---|---|---|
-| <img src="lilacs/assets/preview.jpg" width="160" alt="Lilacs"/> | **[Lilacs](lilacs)**<br/>Inspirado em Lilacs, do Pastel Ghost, com a música tocando e letra sincronizada | Wallpaper Engine, Lively | [2.1.0](https://github.com/EduardoHolkem/wallpapers/releases/tag/lilacs-v2.1.0) |
-| <img src="daemon/assets/preview.jpg" width="160" alt="Daemon"/> | **[Daemon](daemon)**<br/>Daemon Targaryen com brasas subindo sobre um fundo vermelho escuro | Wallpaper Engine, Lively | [1.1.0](https://github.com/EduardoHolkem/wallpapers/releases/tag/daemon-v1.1.0) |
-| <img src="jon-snow/assets/preview.jpg" width="160" alt="Jon Snow"/> | **[Jon Snow](jon-snow)**<br/>Jon Snow no meio de uma nevasca | Wallpaper Engine, Lively | [1.1.0](https://github.com/EduardoHolkem/wallpapers/releases/tag/jon-snow-v1.1.0) |
+| <img src="lilacs/assets/preview.jpg" width="160" alt="Lilacs"/> | **[Lilacs](lilacs)**<br/>Inspirado em Lilacs, do Pastel Ghost, com a música tocando e letra sincronizada | Wallpaper Engine, Lively | [2.1.1](https://github.com/EduardoHolkem/wallpapers/releases/tag/lilacs-v2.1.1) |
+| <img src="daemon/assets/preview.jpg" width="160" alt="Daemon"/> | **[Daemon](daemon)**<br/>Daemon Targaryen com brasas subindo sobre um fundo vermelho escuro | Wallpaper Engine, Lively | [1.1.1](https://github.com/EduardoHolkem/wallpapers/releases/tag/daemon-v1.1.1) |
+| <img src="jon-snow/assets/preview.jpg" width="160" alt="Jon Snow"/> | **[Jon Snow](jon-snow)**<br/>Jon Snow no meio de uma nevasca | Wallpaper Engine, Lively | [1.1.1](https://github.com/EduardoHolkem/wallpapers/releases/tag/jon-snow-v1.1.1) |
 
 ## Como instalar
 
@@ -56,7 +56,7 @@ node build.js
 
 Isso gera em `dist/` a pasta do Wallpaper Engine, a do Lively e os zips de cada wallpaper, e em `site/` o hub com a prévia ao vivo de todos. A cada envio para a branch `main`, o GitHub Actions monta o site e publica no Pages.
 
-Para incluir um wallpaper novo, crie a pasta dele no mesmo formato das outras, coloque uma linha na lista do `build.js` e um bloco em `hub/data.js`. As releases usam o nome do wallpaper na tag, como `lilacs-v2.1.0`.
+Para incluir um wallpaper novo, crie a pasta dele no mesmo formato das outras, coloque uma linha na lista do `build.js` e um bloco em `hub/data.js`. As releases usam o nome do wallpaper na tag, como `lilacs-v2.1.1`.
 
 ## Licença
 

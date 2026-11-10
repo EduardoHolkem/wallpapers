@@ -50,6 +50,21 @@
     .clock .date{font-size:6.7px;margin-top:4.7px;opacity:.75;letter-spacing:.25em}
     .hidden{display:none !important}
 
+    /* Assinatura do criador, pequena no canto inferior direito. Como o relógio,
+       é desenhada no tamanho de uma tela de 1280px e escalada com a tela. Em
+       tela em pé (celular, prévia estreita) vira a versão curta do nome. */
+    .sign{
+      position:absolute;right:calc(10*var(--u));bottom:calc(8*var(--u));z-index:12;
+      transform:scale(var(--s));transform-origin:100% 100%;
+      font-size:8px;font-weight:400;letter-spacing:.08em;white-space:nowrap;line-height:1;
+      color:rgba(255,255,255,.55);text-shadow:0 1px 2px rgba(0,0,0,.5);
+      pointer-events:none;
+    }
+    .sign .short{display:none}
+    @media (max-aspect-ratio:1/1){.sign .full{display:none}.sign .short{display:inline}}
+    /* com a caixa da música no canto direito, a assinatura passa para o esquerdo */
+    .player.pos-br ~ .sign{right:auto;left:calc(10*var(--u));transform-origin:0 100%}
+
     /* ===== Caixa "tocando agora" (Spotify / YouTube Music via Wallpaper Engine) ===== */
     .player{
       --accent:#9b5cff;
@@ -145,6 +160,8 @@
       </div>
       <div class="lyrics" id="np-lyrics"></div>
     </div>
+
+    <div class="sign" id="sign"><span class="full">Eduardo da Silva Holkem</span><span class="short">Eduardo S. Holkem</span></div>
   </div>
 
   <script>
@@ -610,6 +627,7 @@
         if(p[k]){CONFIG.colors[i]=weColorToHex(p[k].value);rebuild=true;}
       });
       if(p.showclock)document.getElementById('clock').classList.toggle('hidden',!p.showclock.value);
+      if(p.signature)document.getElementById('sign').classList.toggle('hidden',!p.signature.value);
       if(p.grain){CONFIG.grain=p.grain.value;makeGrain(CONFIG.grain/100);}
       FX_KEYS.forEach(k=>{if(p[k])CONFIG[k]=!!p[k].value;});
       if(p.vhs)grainEl.classList.toggle('hidden',!CONFIG.vhs);

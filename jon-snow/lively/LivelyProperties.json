@@ -23,6 +23,11 @@
     "value": 0,
     "items": ["Automático", "Completo", "Leve (PC sem placa de vídeo)"]
   },
+  "signature": {
+    "text": "Mostrar assinatura do criador",
+    "type": "checkbox",
+    "value": true
+  },
   "fps": {
     "text": "FPS",
     "type": "slider",

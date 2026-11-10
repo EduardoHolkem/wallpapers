@@ -53,6 +53,19 @@
     .clock .time{font-size:16px;font-weight:300;letter-spacing:.08em}
     .clock .date{font-size:7.3px;opacity:.8;margin-top:3px;letter-spacing:.06em;text-transform:lowercase}
     .hidden{display:none !important}
+
+    /* Assinatura do criador, pequena no canto inferior direito. Como o relógio,
+       é desenhada no tamanho de uma tela de 1280px e escalada com a tela. Em
+       tela em pé (celular, prévia estreita) vira a versão curta do nome. */
+    .sign{
+      position:absolute;right:calc(10*var(--u));bottom:calc(8*var(--u));z-index:12;
+      transform:scale(var(--s));transform-origin:100% 100%;
+      font-size:8px;font-weight:400;letter-spacing:.08em;white-space:nowrap;line-height:1;
+      color:rgba(255,255,255,.6);text-shadow:0 1px 2px rgba(0,0,0,.6);
+      pointer-events:none;
+    }
+    .sign .short{display:none}
+    @media (max-aspect-ratio:1/1){.sign .full{display:none}.sign .short{display:inline}}
   </style>
 </head>
 <body>
@@ -65,6 +78,7 @@
       <div class="time" id="clock-time">00:00:00</div>
       <div class="date" id="clock-date"></div>
     </div>
+    <div class="sign" id="sign"><span class="full">Eduardo da Silva Holkem</span><span class="short">Eduardo S. Holkem</span></div>
   </div>
 
   <script>
@@ -221,6 +235,7 @@
   window.wallpaperPropertyListener={
     applyUserProperties(p){
       if(p.showclock)document.getElementById('clock').classList.toggle('hidden',!p.showclock.value);
+      if(p.signature)document.getElementById('sign').classList.toggle('hidden',!p.signature.value);
       if(p.glow)document.getElementById('glow').classList.toggle('hidden',!p.glow.value);
       if(p.fps)CONFIG.fps=Math.max(10,Math.min(60,p.fps.value));
       if(p.perf){

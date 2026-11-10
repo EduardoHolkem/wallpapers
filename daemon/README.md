@@ -3,7 +3,7 @@
 # Daemon
 
 <a href="https://eduardoholkem.github.io/wallpapers/live/daemon/"><img src="https://img.shields.io/badge/ver%20ao%20vivo-ff4d5e?style=for-the-badge&logo=googlechrome&logoColor=white"/></a>
-<a href="https://github.com/EduardoHolkem/wallpapers/releases/tag/daemon-v1.1.0"><img src="https://img.shields.io/badge/baixar-8c1420?style=for-the-badge&logo=github&logoColor=white"/></a>
+<a href="https://github.com/EduardoHolkem/wallpapers/releases/tag/daemon-v1.1.1"><img src="https://img.shields.io/badge/baixar-8c1420?style=for-the-badge&logo=github&logoColor=white"/></a>
 <img src="https://img.shields.io/badge/Wallpaper%20Engine-2a0008?style=for-the-badge&logo=steam&logoColor=white"/>
 <img src="https://img.shields.io/badge/Lively%20Wallpaper-2a0008?style=for-the-badge&logo=windows&logoColor=white"/>
 
@@ -39,7 +39,7 @@ Ele nasceu da mesma base do Jon Snow e foi reescrito para ficar mais leve e no m
 
 ## Instalação
 
-Baixe o arquivo da sua plataforma na [release do Daemon](https://github.com/EduardoHolkem/wallpapers/releases/tag/daemon-v1.1.0).
+Baixe o arquivo da sua plataforma na [release do Daemon](https://github.com/EduardoHolkem/wallpapers/releases/tag/daemon-v1.1.1).
 
 <details open>
 <summary><b>Wallpaper Engine</b></summary>
@@ -78,6 +78,7 @@ Baixe a imagem estática, sem o relógio, e use como papel de parede comum no PC
 | Quantidade de brasas | 100% | de 0 a 200% |
 | Brilho atrás da personagem | ligado | a luz vermelha pulsando |
 | Mostrar relógio | ligado | hora e data no canto superior esquerdo |
+| Mostrar assinatura do criador | ligado | meu nome pequeno no canto inferior direito |
 | Desempenho | automático | no automático, o modo leve liga sozinho quando o PC não tem placa de vídeo ou não sustenta o FPS. Ele deixa o brilho e a personagem parados e desenha as brasas sem esticar a imagem, o que pesa bem menos |
 | FPS | 30 | limite de quadros por segundo |
 

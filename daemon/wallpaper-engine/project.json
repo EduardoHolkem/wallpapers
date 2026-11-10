@@ -28,6 +28,12 @@
 				"type": "bool",
 				"value": true
 			},
+			"signature": {
+				"order": 6,
+				"text": "Mostrar assinatura do criador",
+				"type": "bool",
+				"value": true
+			},
 			"perf": {
 				"order": 5,
 				"text": "Desempenho (Automático liga o modo leve em PC fraco)",

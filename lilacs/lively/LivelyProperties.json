@@ -23,6 +23,7 @@
 
   "labelTela": { "type": "label", "value": "Relógio e música" },
   "showclock": { "text": "Mostrar relógio", "type": "checkbox", "value": false },
+  "signature": { "text": "Mostrar assinatura do criador", "type": "checkbox", "value": true },
   "showplayer": { "text": "Mostrar música tocando", "type": "checkbox", "value": true },
   "showlyrics": { "text": "Mostrar letra sincronizada", "type": "checkbox", "value": true },
   "boxposition": { "text": "Posição da caixa", "type": "dropdown", "value": 0, "items": ["Inferior esquerdo", "Inferior direito", "Superior direito"] },

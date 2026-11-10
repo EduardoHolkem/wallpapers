@@ -143,6 +143,13 @@
 				"type" : "bool",
 				"value" : false
 			},
+			"signature" :
+			{
+				"order" : 22,
+				"text" : "Mostrar assinatura do criador",
+				"type" : "bool",
+				"value" : true
+			},
 			"showplayer" :
 			{
 				"order" : 18,

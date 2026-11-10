@@ -5,7 +5,7 @@
 <br/>
 
 <a href="https://eduardoholkem.github.io/wallpapers/live/lilacs/"><img src="https://img.shields.io/badge/ver%20a%20demo-9b5cff?style=for-the-badge&logo=googlechrome&logoColor=white"/></a>
-<a href="https://github.com/EduardoHolkem/wallpapers/releases/tag/lilacs-v2.1.0"><img src="https://img.shields.io/badge/baixar-ff3fb4?style=for-the-badge&logo=github&logoColor=white"/></a>
+<a href="https://github.com/EduardoHolkem/wallpapers/releases/tag/lilacs-v2.1.1"><img src="https://img.shields.io/badge/baixar-ff3fb4?style=for-the-badge&logo=github&logoColor=white"/></a>
 <img src="https://img.shields.io/badge/Wallpaper%20Engine-2e6bff?style=for-the-badge&logo=steam&logoColor=white"/>
 <img src="https://img.shields.io/badge/Lively%20Wallpaper-2ff3e0?style=for-the-badge&logo=windows&logoColor=0d0718"/>
 
@@ -58,7 +58,7 @@ Existem duas versões com o mesmo código, uma para o **Wallpaper Engine** (Stea
 
 ## Instalação
 
-Baixe o arquivo da sua plataforma na [release do Lilacs](https://github.com/EduardoHolkem/wallpapers/releases/tag/lilacs-v2.1.0). Todos os wallpapers ficam no [hub](https://eduardoholkem.github.io/wallpapers/).
+Baixe o arquivo da sua plataforma na [release do Lilacs](https://github.com/EduardoHolkem/wallpapers/releases/tag/lilacs-v2.1.1). Todos os wallpapers ficam no [hub](https://eduardoholkem.github.io/wallpapers/).
 
 <details open>
 <summary><b>Wallpaper Engine</b></summary>
@@ -118,6 +118,7 @@ A letra não vem junto com o wallpaper. Quando a faixa muda, ele busca a letra s
 | Cantos escuros | ligado | vinheta nas bordas da tela |
 | Parallax com o mouse | ligado | camadas reagem ao cursor |
 | Mostrar relógio | desligado | hora e dia no canto superior esquerdo |
+| Mostrar assinatura do criador | ligado | meu nome pequeno no canto inferior direito (vai para o esquerdo se a caixa da música estiver na direita) |
 | Mostrar música tocando | ligado | caixa com capa, música e banda enquanto a música toca |
 | Mostrar letra sincronizada | ligado | letra dentro da caixa |
 | Posição da caixa | inferior esquerdo | também pode ir para a direita ou para cima |
